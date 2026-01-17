@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.Instant;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -38,8 +39,14 @@ public class User {
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
+    @OneToMany(mappedBy = "applicant")
+    private List<HelpRequest> helpRequests;
+
+
     @PrePersist
     void onCreate() {
         this.createdAt = Instant.now();
     }
+
+
 }
