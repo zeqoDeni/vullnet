@@ -1,4 +1,4 @@
-package model;
+package org.vullnet.vullnet00.model;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -39,8 +39,9 @@ public class User {
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
-    @OneToMany(mappedBy = "applicant")
+    @OneToMany(mappedBy = "createdBy")
     private List<HelpRequest> helpRequests;
+
 
 
     @PrePersist

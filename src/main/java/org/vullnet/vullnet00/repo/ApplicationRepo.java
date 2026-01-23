@@ -1,6 +1,6 @@
-package repo;
+package org.vullnet.vullnet00.repo;
 
-import model.Application;
+import org.vullnet.vullnet00.model.Application;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

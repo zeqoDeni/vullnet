@@ -1,10 +1,7 @@
-package model;
+package org.vullnet.vullnet00.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.apache.logging.log4j.util.Lazy;
-
-import java.util.List;
 
 @Entity
 @Builder
@@ -31,6 +28,10 @@ public class HelpRequest {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "owner_id", nullable = false)
     private User owner;
+
+    @ManyToOne
+    @JoinColumn(name="created_by_id")
+    private User createdBy;
 
 
 //Me mappedBy e lidhim aplikimin me request-in. Me cascade=ALL nese ruaj/fshij request-in, veprohet edhe mbi aplikimet. Me orphanRemoval=true nese nje aplikim hiqet nga lista (nuk i perket me request-it), ai fshihet nga databaza.”

@@ -1,4 +1,4 @@
-package dto;
+package org.vullnet.vullnet00.dto;
 
 import lombok.*;
 

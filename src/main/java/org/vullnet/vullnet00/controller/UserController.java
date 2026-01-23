@@ -1,13 +1,13 @@
-package controller;
+package org.vullnet.vullnet00.controller;
 
-import dto.UserCreateRequest;
-import dto.UserUpdateRequest;
-import dto.UserResponse;
+import org.vullnet.vullnet00.dto.UserCreateRequest;
+import org.vullnet.vullnet00.dto.UserUpdateRequest;
+import org.vullnet.vullnet00.dto.UserResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import service.UserService;
+import org.vullnet.vullnet00.service.UserService;
 
 import java.util.List;
 

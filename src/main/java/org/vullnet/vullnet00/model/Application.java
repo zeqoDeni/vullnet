@@ -1,4 +1,4 @@
-package model;
+package org.vullnet.vullnet00.model;
 
 import jakarta.persistence.*;
 import lombok.*;
