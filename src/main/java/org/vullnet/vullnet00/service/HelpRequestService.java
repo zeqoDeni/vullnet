@@ -76,6 +76,8 @@ public class HelpRequestService {
                 .location(request.getLocation())
                 .status(request.getStatus() != null ? request.getStatus().name() : null)
                 .ownerId(request.getOwner() != null ? request.getOwner().getId() : null)
+                .ownerName(request.getOwner() != null ? (request.getOwner().getFirstName() + " " + request.getOwner().getLastName()) : null)
+                .ownerAvatar(request.getOwner() != null ? request.getOwner().getAvatarUrl() : null)
                 .build();
     }
 

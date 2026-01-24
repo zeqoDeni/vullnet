@@ -1,6 +1,8 @@
 package org.vullnet.vullnet00.service;
 
 import org.vullnet.vullnet00.dto.UserCreateRequest;
+import org.vullnet.vullnet00.dto.UserProfileResponse;
+import org.vullnet.vullnet00.dto.UserProfileUpdateRequest;
 import org.vullnet.vullnet00.dto.UserResponse;
 import org.vullnet.vullnet00.dto.UserUpdateRequest;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +30,43 @@ public class UserService {
     public UserResponse updateRole(Long userId, Role role) {
         User user = repo.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
         user.setRole(role);
+        return toResponse(repo.save(user));
+    }
+
+    public UserProfileResponse getProfile(Long userId) {
+        User user = repo.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        return toProfileResponse(user);
+    }
+
+    public UserProfileResponse updateProfile(Long userId, UserProfileUpdateRequest req) {
+        User user = repo.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        if (req.getBio() != null) {
+            user.setBio(req.getBio());
+        }
+        if (req.getAvatarUrl() != null) {
+            user.setAvatarUrl(req.getAvatarUrl());
+        }
+        if (req.getLocation() != null) {
+            user.setLocation(req.getLocation());
+        }
+        if (req.getPhone() != null) {
+            user.setPhone(req.getPhone());
+        }
+        if (req.getSkills() != null) {
+            user.setSkills(req.getSkills());
+        }
+        if (req.getAvailability() != null) {
+            user.setAvailability(req.getAvailability());
+        }
+        if (req.getProfilePublic() != null) {
+            user.setProfilePublic(req.getProfilePublic());
+        }
+        return toProfileResponse(repo.save(user));
+    }
+
+    public UserResponse updateStatus(Long userId, boolean active) {
+        User user = repo.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        user.setActive(active);
         return toResponse(repo.save(user));
     }
 
@@ -69,7 +108,29 @@ public class UserService {
 
 
     private UserResponse toResponse(User u) {
-        return UserResponse.builder().id(u.getId()).firstName(u.getFirstName()).lastName(u.getLastName()).email(u.getEmail()).role(u.getRole() !=null ? u.getRole().name() : null).build();
+        return UserResponse.builder()
+                .id(u.getId())
+                .firstName(u.getFirstName())
+                .lastName(u.getLastName())
+                .email(u.getEmail())
+                .role(u.getRole() != null ? u.getRole().name() : null)
+                .active(u.isActive())
+                .build();
+    }
+
+    private UserProfileResponse toProfileResponse(User u) {
+        return UserProfileResponse.builder()
+                .id(u.getId())
+                .firstName(u.getFirstName())
+                .lastName(u.getLastName())
+                .bio(u.getBio())
+                .avatarUrl(u.getAvatarUrl())
+                .location(u.getLocation())
+                .phone(u.getPhone())
+                .skills(u.getSkills())
+                .availability(Boolean.TRUE.equals(u.getAvailability()))
+                .profilePublic(u.isProfilePublic())
+                .build();
     }
 
 

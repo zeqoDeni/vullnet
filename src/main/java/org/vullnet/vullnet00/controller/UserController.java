@@ -9,6 +9,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.vullnet.vullnet00.dto.HelpRequestResponse;
 import org.vullnet.vullnet00.dto.RoleUpdateRequest;
+import org.vullnet.vullnet00.dto.UserProfileResponse;
+import org.vullnet.vullnet00.dto.UserProfileUpdateRequest;
+import org.vullnet.vullnet00.dto.UserStatusUpdateRequest;
 import org.vullnet.vullnet00.service.HelpRequestService;
 import org.vullnet.vullnet00.service.UserService;
 import org.vullnet.vullnet00.security.UserPrincipal;
@@ -82,6 +85,28 @@ public class UserController {
         return helpRequestService.getByOwnerId(id, pageable);
     }
 
+    @GetMapping("/{id}/profile")
+    public UserProfileResponse getProfile(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @PathVariable Long id
+    ) {
+        UserProfileResponse profile = userService.getProfile(id);
+        if (!profile.isProfilePublic()) {
+            enforceSelfOrAdmin(principal, id);
+        }
+        return profile;
+    }
+
+    @PutMapping("/{id}/profile")
+    public UserProfileResponse updateProfile(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @PathVariable Long id,
+            @Valid @RequestBody UserProfileUpdateRequest request
+    ) {
+        enforceSelfOrAdmin(principal, id);
+        return userService.updateProfile(id, request);
+    }
+
     @PutMapping("/{id}/role")
     public UserResponse updateRole(
             @AuthenticationPrincipal UserPrincipal principal,
@@ -91,6 +116,16 @@ public class UserController {
         enforceAdmin(principal);
         org.vullnet.vullnet00.model.Role role = org.vullnet.vullnet00.model.Role.valueOf(request.getRole().toUpperCase());
         return userService.updateRole(id, role);
+    }
+
+    @PutMapping("/{id}/status")
+    public UserResponse updateStatus(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @PathVariable Long id,
+            @Valid @RequestBody UserStatusUpdateRequest request
+    ) {
+        enforceAdmin(principal);
+        return userService.updateStatus(id, request.getActive());
     }
 
     private void enforceSelfOrAdmin(UserPrincipal principal, Long userId) {

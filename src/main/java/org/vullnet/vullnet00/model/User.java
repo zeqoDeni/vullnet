@@ -32,6 +32,33 @@ public class User {
     @Column(nullable = false)
     private String passwordHash; // store hashed passwords only
 
+    @Column(length = 500)
+    private String bio;
+
+    @Column
+    private String avatarUrl;
+
+    @Column
+    private String location;
+
+    @Column(length = 40)
+    private String phone;
+
+    @Column(length = 500)
+    private String skills;
+
+    @Column
+    @Builder.Default
+    private Boolean availability = true;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean profilePublic = true;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean active = true;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @Builder.Default

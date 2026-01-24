@@ -122,6 +122,7 @@ public class ApplicationService {
 
     private ApplicationResponse toResponse(Application app) {
         return ApplicationResponse.builder()
+                .applicationId(app.getId())
                 .helpRequestId(app.getHelpRequest() != null ? app.getHelpRequest().getId() : null)
                 .applicantId(app.getApplicant() != null ? app.getApplicant().getId() : null)
                 .build();

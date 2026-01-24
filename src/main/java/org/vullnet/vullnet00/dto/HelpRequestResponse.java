@@ -14,5 +14,7 @@ public class HelpRequestResponse {
     private String location;
     private String status;
     private Long ownerId;
+    private String ownerName;
+    private String ownerAvatar;
 
 }
