@@ -1,5 +1,6 @@
 package org.vullnet.vullnet00.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -22,14 +23,22 @@ public class HelpRequest {
     @Column(nullable = false)
     private String description;
 
+    @Column(nullable = false)
+    private String location;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private RequestStatus status;
 
+    @Column
+    private java.time.LocalDateTime statusUpdatedAt;
+
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "owner_id", nullable = false)
     private User owner;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name="created_by_id")
     private User createdBy;
@@ -37,6 +46,7 @@ public class HelpRequest {
 
 //Me mappedBy e lidhim aplikimin me request-in. Me cascade=ALL nese ruaj/fshij request-in, veprohet edhe mbi aplikimet. Me orphanRemoval=true nese nje aplikim hiqet nga lista (nuk i perket me request-it), ai fshihet nga databaza.”
 
+    @JsonIgnore
     @OneToMany(mappedBy = "helpRequest", cascade = CascadeType.ALL, orphanRemoval = true)
     private java.util.List<Application> applications = new java.util.ArrayList<>();
 

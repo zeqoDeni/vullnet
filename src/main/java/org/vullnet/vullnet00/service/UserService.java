@@ -6,23 +6,29 @@ import org.vullnet.vullnet00.dto.UserUpdateRequest;
 import lombok.RequiredArgsConstructor;
 import org.vullnet.vullnet00.model.Role;
 import org.vullnet.vullnet00.model.User;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.vullnet.vullnet00.repo.Repo;
+import org.vullnet.vullnet00.repo.UserRepo;
 
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
-    final private Repo repo;
-    private BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    final private UserRepo repo;
+    private final PasswordEncoder passwordEncoder;
     public UserResponse create(UserCreateRequest req) {
         if (repo.existsByEmail(req.getEmail())) {
             throw new RuntimeException("email already in use");
 
         } User user = User.builder().firstName(req.getFirstName()).lastName(req.getLastName()).email(req.getEmail()).passwordHash(passwordEncoder.encode(req.getPassword())).role(Role.USER).build();
     return toResponse(repo.save(user));
+    }
+
+    public UserResponse updateRole(Long userId, Role role) {
+        User user = repo.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        user.setRole(role);
+        return toResponse(repo.save(user));
     }
 
     public List <UserResponse> getAll() {
@@ -44,10 +50,10 @@ public class UserService {
             }
         if (req.getFirstName() != null) { u.setFirstName(req.getFirstName());}
 
-        if (req.getLastName() !=null) {u.setLastName(req.getFirstName());}
+        if (req.getLastName() !=null) {u.setLastName(req.getLastName());}
 
         if (req.getPassword()!= null && !req.getPassword().isBlank()) {
-            passwordEncoder.encode(req.getPassword());
+            u.setPasswordHash(passwordEncoder.encode(req.getPassword()));
         }
 
         return toResponse(repo.save(u));

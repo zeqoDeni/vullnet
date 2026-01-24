@@ -9,14 +9,16 @@ import org.vullnet.vullnet00.dto.ApplicationResponse;
 import org.vullnet.vullnet00.model.*;
 import org.vullnet.vullnet00.repo.ApplicationRepo;
 import org.vullnet.vullnet00.repo.HelpRequestRepo;
-import org.vullnet.vullnet00.repo.Repo;
+import org.vullnet.vullnet00.repo.UserRepo;
+
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
 public class ApplicationService {
 
     private final ApplicationRepo applicationRepo;
-    private final Repo repo;
+    private final UserRepo repo;
     private final HelpRequestRepo helpRequestRepo;
 
 
@@ -42,6 +44,7 @@ public class ApplicationService {
         return toResponse(applicationRepo.save(app));
     }
 
+    @org.springframework.transaction.annotation.Transactional
     public ApplicationResponse accept(Long userId, Long applicationId) {
         Application app = applicationRepo.findById(applicationId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Application not found"));
         if (app.getStatus() != ApplicationStatus.PENDING) {
@@ -54,24 +57,73 @@ public class ApplicationService {
         if (!request.getOwner().getId().equals(userId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not the owner of this request");
         }
-        if (request.getStatus() != RequestStatus.OPEN) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Request is not open");
+        if (request.getStatus() == RequestStatus.CANCELLED || request.getStatus() == RequestStatus.COMPLETED) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Request is closed");
         }
         app.setStatus(ApplicationStatus.ACCEPTED);
+        app.setDecidedAt(LocalDateTime.now());
+        app.setDecidedById(userId);
         request.setStatus(RequestStatus.IN_PROGRESS);
+        request.setStatusUpdatedAt(LocalDateTime.now());
         applicationRepo.save(app);
         helpRequestRepo.save(request);
         return toResponse(app);
     }
 
+    @org.springframework.transaction.annotation.Transactional
+    public ApplicationResponse reject(Long userId, Long applicationId) {
+        Application app = applicationRepo.findById(applicationId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Application not found"));
+        HelpRequest request = app.getHelpRequest();
+        if (request == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Application has no request");
+        }
+        if (!request.getOwner().getId().equals(userId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not the owner of this request");
+        }
+        if (request.getStatus() != RequestStatus.OPEN) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Request is not open");
+        }
+        if (app.getStatus() != ApplicationStatus.PENDING) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Application is not pending");
+        }
+        app.setStatus(ApplicationStatus.REJECTED);
+        app.setDecidedAt(LocalDateTime.now());
+        app.setDecidedById(userId);
+        return toResponse(applicationRepo.save(app));
+    }
+
+    public org.springframework.data.domain.Page<ApplicationResponse> getByRequestId(Long requestId, org.springframework.data.domain.Pageable pageable) {
+        if (!helpRequestRepo.existsById(requestId)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Request not found");
+        }
+        return applicationRepo.findByHelpRequestId(requestId, pageable).map(this::toResponse);
+    }
+
+    public org.springframework.data.domain.Page<ApplicationResponse> getByApplicantId(Long userId, org.springframework.data.domain.Pageable pageable) {
+        return applicationRepo.findByApplicantId(userId, pageable).map(this::toResponse);
+    }
+
+    @org.springframework.transaction.annotation.Transactional
+    public ApplicationResponse withdraw(Long userId, Long applicationId) {
+        Application app = applicationRepo.findById(applicationId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Application not found"));
+        if (app.getApplicant() == null || !app.getApplicant().getId().equals(userId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not the applicant");
+        }
+        if (app.getStatus() != ApplicationStatus.PENDING) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only pending applications can be withdrawn");
+        }
+        app.setStatus(ApplicationStatus.WITHDRAWN);
+        app.setDecidedAt(LocalDateTime.now());
+        app.setDecidedById(userId);
+        return toResponse(applicationRepo.save(app));
+    }
+
     private ApplicationResponse toResponse(Application app) {
         return ApplicationResponse.builder()
-                .id(app.getId())
                 .helpRequestId(app.getHelpRequest() != null ? app.getHelpRequest().getId() : null)
                 .applicantId(app.getApplicant() != null ? app.getApplicant().getId() : null)
-                .message(app.getMessage())
-                .status(app.getStatus() != null ? app.getStatus().name() : null)
-                .createdAt(app.getCreatedAt())
                 .build();
     }
 }

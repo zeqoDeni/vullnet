@@ -1,5 +1,6 @@
 package org.vullnet.vullnet00.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -18,11 +19,13 @@ public class Application{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "help_request_id")
     private HelpRequest helpRequest;
 
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "applicant_id")
     private User applicant;
@@ -33,6 +36,12 @@ public class Application{
     @Column(nullable = false)
     @Builder.Default
     private ApplicationStatus status = ApplicationStatus.PENDING;
+
+    @Column
+    private LocalDateTime decidedAt;
+
+    @Column
+    private Long decidedById;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();

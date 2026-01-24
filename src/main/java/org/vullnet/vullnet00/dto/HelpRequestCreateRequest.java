@@ -11,4 +11,6 @@ public class HelpRequestCreateRequest {
     private String title;
     @NotBlank
     private String description;
+    @NotBlank
+    private String location;
 }

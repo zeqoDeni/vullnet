@@ -11,8 +11,8 @@ public class HelpRequestResponse {
     private Long id;
     private String title;
     private String description;
+    private String location;
     private String status;
     private Long ownerId;
-    private Long createdById;
 
 }
