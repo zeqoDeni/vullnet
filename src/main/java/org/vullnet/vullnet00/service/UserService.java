@@ -66,4 +66,5 @@ public class UserService {
         return UserResponse.builder().id(u.getId()).firstName(u.getFirstName()).lastName(u.getLastName()).email(u.getEmail()).role(u.getRole() !=null ? u.getRole().name() : null).build();
     }
 
+
 }

@@ -26,7 +26,8 @@ public class Application{
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "applicant_id")
     private User applicant;
-
+    @Column
+    private String message;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
