@@ -8,5 +8,4 @@ import java.util.Optional;
 public interface ApplicationRepo  extends JpaRepository<Application, Long> {
     Optional<Application> findByHelpRequestIdAndApplicantId(Long helpRequestId, Long applicantId);
     boolean existsByHelpRequestIdAndApplicantId(Long helpRequestId, Long applicantId);
-
 }
