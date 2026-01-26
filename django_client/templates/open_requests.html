@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+  <h1>Thirrje të hapura</h1>
+  <table>
+    <tr>
+      <th>ID</th>
+      <th>Titull</th>
+      <th>Vendndodhja</th>
+      <th>Status</th>
+      <th>Pronar</th>
+      <th>Avatar</th>
+    </tr>
+    {% for r in requests %}
+    <tr>
+      <td>{{ r.id }}</td>
+      <td><a href="/requests/{{ r.id }}/">{{ r.title }}</a></td>
+      <td>{{ r.location }}</td>
+      <td><span class="pill">{{ r.status }}</span></td>
+      <td><a href="/profiles/{{ r.ownerId }}/">{{ r.ownerName }}</a></td>
+      <td>
+        {% if r.ownerAvatar %}
+          <img src="{{ r.ownerAvatar }}" alt="avatar" style="width:36px; height:36px; border-radius:50%; object-fit:cover;">
+        {% else %}
+          <img src="https://api.dicebear.com/7.x/identicon/svg?seed={{ r.ownerId }}" alt="avatar" style="width:36px; height:36px; border-radius:50%; object-fit:cover;">
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}

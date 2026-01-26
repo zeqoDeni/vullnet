@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+  <h1>Thirrjet</h1>
+  <h3>Krijo thirrje të re</h3>
+  <form method="post" enctype="multipart/form-data" id="request-create-form">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <input type="hidden" name="imageUrl" id="request-image-url">
+    <label>Foto e thirrjes (opsionale):</label>
+    <input type="file" id="request-image-file">
+    <button type="button" class="pill" id="upload-request-image">Ngarko foton</button>
+    <button type="submit">Krijo</button>
+  </form>
+</div>
+
+<div class="card">
+  <h3>Të gjitha thirrjet</h3>
+  <table>
+    <tr>
+      <th>ID</th>
+      <th>Titull</th>
+      <th>Vendndodhja</th>
+      <th>Foto</th>
+      <th>Status</th>
+      <th>Pronar</th>
+      <th>Avatar</th>
+      <th>Vullnetari</th>
+      <th>Veprime</th>
+    </tr>
+    {% for r in requests %}
+    <tr>
+      <td>{{ r.id }}</td>
+      <td><a href="/requests/{{ r.id }}/">{{ r.title }}</a></td>
+      <td>{{ r.location }}</td>
+      <td>
+        {% if r.imageUrl %}
+          <img src="{{ r.imageUrl }}" alt="foto" style="width:64px; height:64px; object-fit:cover; border-radius:8px;">
+        {% else %}
+          <span class="muted">-</span>
+        {% endif %}
+      </td>
+      <td><span class="pill">{{ r.status }}</span></td>
+      <td><a href="/profiles/{{ r.ownerId }}/">{{ r.ownerName }}</a></td>
+      <td>
+        {% if r.ownerAvatar %}
+          <img src="{{ r.ownerAvatar }}" alt="avatar" style="width:36px; height:36px; border-radius:50%; object-fit:cover;">
+        {% else %}
+          <img src="https://api.dicebear.com/7.x/identicon/svg?seed={{ r.ownerId }}" alt="avatar" style="width:36px; height:36px; border-radius:50%; object-fit:cover;">
+        {% endif %}
+      </td>
+      <td>
+        {% if r.acceptedVolunteerId %}
+          <a href="/profiles/{{ r.acceptedVolunteerId }}/">{{ r.acceptedVolunteerName }}</a>
+        {% else %}
+          <span class="muted">Pa vullnetar</span>
+        {% endif %}
+      </td>
+      <td>
+        {% if request.session.user.id == r.ownerId %}
+          {% if r.status == "IN_PROGRESS" %}
+            <form method="post" action="/requests/{{ r.id }}/complete/" style="display:inline;">
+              {% csrf_token %}
+              <button type="submit">Përfundo</button>
+            </form>
+          {% endif %}
+          {% if r.status != "CANCELLED" and r.status != "COMPLETED" %}
+            <form method="post" action="/requests/{{ r.id }}/cancel/" style="display:inline;">
+              {% csrf_token %}
+              <button type="submit">Anulo</button>
+            </form>
+          {% endif %}
+        {% else %}
+          <span class="muted">Vetëm pronari</span>
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+
+<script>
+  (function(){
+    const uploadBtn = document.getElementById('upload-request-image');
+    if (!uploadBtn) return;
+    uploadBtn.addEventListener('click', async () => {
+      const fileInput = document.getElementById('request-image-file');
+      if (!fileInput.files.length) { alert('Zgjidh një foto'); return; }
+      const fd = new FormData();
+      fd.append('file', fileInput.files[0]);
+      try {
+        const res = await fetch((window.API_BASE_URL || "http://localhost:8080").replace(/\/+$/,'') + "/api/files/request", {
+          method: 'POST',
+          headers: {"Authorization": "Bearer {{ request.session.token|default:'' }}"},
+          body: fd
+        });
+        if (!res.ok) { throw new Error('Ngarkimi dështoi'); }
+        const data = await res.json();
+        document.getElementById('request-image-url').value = data.url;
+        alert('Foto u ngarkua');
+      } catch (err) {
+        alert(err.message);
+      }
+    });
+  })();
+</script>
+{% endblock %}

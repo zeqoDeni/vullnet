@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Vullnet - Ndihmo. Apliko. Bashkohu.</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="brand"><a href="/" style="color:inherit; text-decoration:none;">Vullnet</a></div>
+    <nav class="nav-links">
+      <a href="/login/">Hyr</a>
+      <a href="/register/">Regjistrohu</a>
+      <a href="/requests/open/">Thirrje</a>
+      <a href="/blog/">Blog</a>
+    </nav>
+    <a class="pill" style="padding:10px 14px; background: linear-gradient(135deg, #22d3ee, #f97316); color:#0b1220; font-weight:700;" href="/requests/open/">Shfleto tani</a>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <div style="display:flex; gap:20px; align-items:center; flex-wrap:wrap;">
+        <div style="flex:1 1 320px;">
+          <h1>Ndihmo. Apliko. Bashkohu.</h1>
+          <p class="hero-sub">Komuniteti që lidh thirrjet me vullnetarët, me pikë, vlerësime dhe blog në shqip.</p>
+          <p class="hero-sub">Fitoni pikë për çdo thirrje të përfunduar, merrni vlerësime dhe ngjituni në leaderboard.</p>
+          <div class="cta-buttons">
+            <a href="/requests/open/" class="primary">Shfleto thirrjet</a>
+            <a href="/register/" class="ghost">Krijo llogari</a>
+          </div>
+        </div>
+        <div style="flex:1 1 280px; min-width:260px;">
+          <img src="/static/img/landing-collage.svg" alt="Komuniteti Vullnet" style="width:100%; border-radius:16px; border:1px solid var(--border); box-shadow:0 20px 60px rgba(0,0,0,0.35); background:#0b1220;">
+        </div>
+      </div>
+    </section>
+
+    <div class="stats">
+      <div class="stat"><strong>Thirrje të hapura</strong><br><span class="muted">Menaxho dhe prano aplikime</span></div>
+      <div class="stat"><strong>Vullnetarë aktivë</strong><br><span class="muted">Apliko me mesazh</span></div>
+      <div class="stat"><strong>Historitë e suksesit</strong><br><span class="muted">Këndvështrime nga komuniteti</span></div>
+    </div>
+
+    <div class="card">
+      <h3>Si funksionon</h3>
+      <div class="section-grid">
+        <div class="feature-card"><strong>01. Krijo thirrje</strong><p class="muted">Përshkruaj nevojën, vendndodhjen dhe publikohu.</p></div>
+        <div class="feature-card"><strong>02. Aplikime</strong><p class="muted">Vullnetarët dërgojnë mesazh me dispozicionin e tyre.</p></div>
+        <div class="feature-card"><strong>03. Menaxho</strong><p class="muted">Prano/Refuzo aplikime dhe çoje thirrjen përpara.</p></div>
+        <div class="feature-card"><strong>04. Mbyll</strong><p class="muted">Shëno si të përfunduar ose anulo nëse nuk nevojitet më.</p></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Sistem shpërblimesh</h3>
+      <div class="section-grid">
+        <div class="feature-card"><strong>Pikë</strong><p class="muted">Fitoni pikë për çdo thirrje të përfunduar.</p></div>
+        <div class="feature-card"><strong>Vlerësime</strong><p class="muted">Merr 1–5 yje nga pronari apo vullnetari.</p></div>
+        <div class="feature-card"><strong>Leaderboard</strong><p class="muted">Ngjituni në krye të komunitetit.</p></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Zbulo thirrjet e hapura</h3>
+      <p class="muted">Shiko thirrjet më të fundit nga komuniteti.</p>
+      <a href="/requests/open/" class="pill" style="padding:10px 14px;">Shko te thirrjet</a>
+    </div>
+
+    <div class="card">
+      <h3>Artikuj nga blogu</h3>
+      <div class="blog-grid">
+        {% for post in posts %}
+          <div class="blog-card">
+            {% if post.coverImageUrl %}
+              <img src="{{ post.coverImageUrl }}" alt="{{ post.title }}">
+            {% endif %}
+            <div class="blog-card-body">
+              <div class="blog-meta">{{ post.authorName|default:"Stafi Vullnet" }} • {{ post.createdAt|default:"" }}</div>
+              <h4 style="margin:0;">{{ post.title }}</h4>
+              <p class="muted">{{ post.summary }}</p>
+              <div class="blog-actions">
+                <a href="/blog/{{ post.slug|default:post.id }}/" class="pill">Lexo</a>
+              </div>
+            </div>
+          </div>
+        {% empty %}
+          <p class="muted">Artikujt e fundit do të shfaqen këtu.</p>
+        {% endfor %}
+      </div>
+      <div style="margin-top:12px;">
+        <a href="/blog/" class="pill" style="padding:10px 14px;">Lexo artikujt</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Dëshmitë</h3>
+      <div class="section-grid">
+        <div class="testimonial">
+          <p>“Gjeta vullnetarë për 1 orë, proces i thjeshtë.”</p>
+          <p class="author">— Ardit, krijues thirrjesh</p>
+        </div>
+        <div class="testimonial">
+          <p>“Aplikova shpejt dhe pranimi ishte i menjëhershëm.”</p>
+          <p class="author">— Bleona, vullnetare</p>
+        </div>
+        <div class="testimonial">
+          <p>“Menaxhimi i aplikimeve është i qartë dhe i lehtë.”</p>
+          <p class="author">— Mentor, organizator</p>
+        </div>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

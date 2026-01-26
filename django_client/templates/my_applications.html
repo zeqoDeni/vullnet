@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+  <h1>Aplikimet e mia</h1>
+  <table>
+    <tr>
+      <th>Thirrja</th>
+      <th>Statusi</th>
+      <th>Veprime</th>
+    </tr>
+    {% for a in applications %}
+    <tr>
+      <td><a href="/requests/{{ a.helpRequestId }}/">Thirrja #{{ a.helpRequestId }}</a></td>
+      <td><span class="pill">{{ a.status }}</span></td>
+      <td>
+        {% if a.status == "PENDING" %}
+          <form method="post" action="/applications/{{ a.applicationId }}/withdraw/" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit">Tërhiq aplikimin</button>
+          </form>
+        {% else %}
+          <span class="muted">S'ka veprim</span>
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}

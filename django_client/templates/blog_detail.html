@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+  <div style="display:flex; flex-direction:column; gap:12px;">
+    <div class="pill">Artikull blogu</div>
+    <h1 style="margin:0;">{{ post.title }}</h1>
+    <p class="muted">{{ post.authorName|default:"Stafi Vullnet" }} • {{ post.createdAt|default:"" }}</p>
+  </div>
+  {% if post.coverImageUrl %}
+    <img src="{{ post.coverImageUrl }}" alt="{{ post.title }}" style="width:100%; border-radius:16px; margin-bottom:16px;">
+  {% endif %}
+  {% if post.gallery %}
+  <div class="card" style="padding:12px; margin-top:12px;">
+    <h4 style="margin-top:0;">Galeria</h4>
+    <div class="reviews" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
+      {% for img in post.gallery %}
+        <div class="review">
+          <img src="{{ img }}" alt="Gallery" style="width:100%; border-radius:10px; object-fit:cover;">
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+  <div class="article-body">
+    {{ post.content|linebreaks }}
+  </div>
+  <p style="margin-top:18px;"><a href="/blog/">← Kthehu te blogu</a></p>
+</div>
+{% endblock %}

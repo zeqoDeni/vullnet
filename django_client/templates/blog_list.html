@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+  <h1>Blog</h1>
+  <p class="muted">Lexo historitë, këshillat dhe lajmet nga komuniteti ynë.</p>
+  <div class="blog-grid">
+    {% for post in posts %}
+      <div class="blog-card">
+        {% if post.coverImageUrl %}
+          <img src="{{ post.coverImageUrl }}" alt="{{ post.title }}">
+        {% endif %}
+        <div class="blog-card-body">
+          <div class="blog-meta">{{ post.authorName|default:"Stafi Vullnet" }} • {{ post.createdAt|default:"" }}</div>
+          <h3 style="margin:0;"><a href="/blog/{{ post.slug|default:post.id }}/">{{ post.title }}</a></h3>
+          <p class="muted">{{ post.summary|default:"" }}</p>
+          <div class="blog-actions">
+            <a href="/blog/{{ post.slug|default:post.id }}/" class="pill">Lexo</a>
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <p class="muted">Nuk ka artikuj ende.</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

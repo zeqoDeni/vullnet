@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+  <h1>Profili</h1>
+  {% if profile.avatarUrl %}
+    <img src="{{ profile.avatarUrl }}" alt="Avatar" style="width:120px; border-radius:12px;">
+  {% else %}
+    <img src="https://api.dicebear.com/7.x/identicon/svg?seed={{ profile.id }}" alt="Avatar" style="width:120px; border-radius:12px;">
+  {% endif %}
+  <p><strong>Emri:</strong> {{ profile.firstName }} {{ profile.lastName }}</p>
+  <p><strong>Bio:</strong> {{ profile.bio }}</p>
+  <p><strong>Vendndodhja:</strong> {{ profile.location }}</p>
+  <p><strong>Aftësitë:</strong> {{ profile.skills }}</p>
+  <p><strong>Disponueshmëria:</strong> {% if profile.availability %}Po{% else %}Jo{% endif %}</p>
+  <p><strong>Vlerësimi:</strong> {{ profile.averageRating|default:"0"|floatformat:1 }}/5 ({{ profile.reviewCount|default:0 }} vlerësime)</p>
+  <p><strong>Pikë:</strong> {{ profile.rewardPoints|default:0 }}</p>
+  <p class="muted">Për të lënë një vlerësim, përdor faqen e thirrjes pasi të jetë përfunduar.</p>
+</div>
+{% endblock %}

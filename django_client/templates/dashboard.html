@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+  <h1>Mirë se erdhe, {{ user.firstName }} {{ user.lastName }}</h1>
+  <p class="muted">Lëviz shpejt: krijo thirrje, apliko, menaxho profilin dhe ndiq pikët.</p>
+  <div class="stats">
+    <div class="stat">
+      <div class="pill">Pikë</div>
+      <h2>{{ rewards.points|default:0 }}</h2>
+      <p class="muted">Pika besueshmërie</p>
+    </div>
+    <div class="stat">
+      <div class="pill">Thirrje të përfunduara</div>
+      <h2>{{ rewards.completedRequests|default:0 }}</h2>
+      <p class="muted">Si vullnetar</p>
+    </div>
+    <div class="stat">
+      <div class="pill">Vlerësimi mesatar</div>
+      <h2>{{ rewards.averageRating|default:"0"|floatformat:1 }}/5</h2>
+      <p class="muted">{{ rewards.reviewCount|default:0 }} vlerësime</p>
+    </div>
+  </div>
+  <div class="stats">
+    <div class="stat"><a href="/requests/">Krijo / menaxho thirrje</a></div>
+    <div class="stat"><a href="/requests/open/">Shfleto thirrje të hapura</a></div>
+    <div class="stat"><a href="/applications/">Aplikimet e mia</a></div>
+    <div class="stat"><a href="/profile/">Përditëso profilin</a></div>
+    {% if user.role == "ADMIN" %}
+    <div class="stat"><a href="/admin-dashboard/">Paneli i adminit</a></div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card">
+  <h3>Leaderboard i vullnetarëve</h3>
+  <p class="muted">Top 5 sipas pikëve</p>
+  <div class="leaderboard">
+    {% for p in leaderboard %}
+      <div class="leader-row">
+        <div>
+          <strong><a href="/profiles/{{ p.id }}/">{{ p.firstName }} {{ p.lastName }}</a></strong><br>
+          <span class="muted">{{ p.completedRequests|default:0 }} thirrje • {{ p.reviewCount|default:0 }} vlerësime • {{ p.averageRating|default:"0"|floatformat:1 }}/5</span>
+        </div>
+        <div class="pill">{{ p.rewardPoints|default:0 }} pikë</div>
+      </div>
+    {% empty %}
+      <p class="muted">Ende nuk ka pikë të llogaritura.</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

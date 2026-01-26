@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+  <h1>Hyr</h1>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Hyr</button>
+  </form>
+  <p class="muted">Nuk ke llogari? <a href="/register/">Regjistrohu</a></p>
+</div>
+{% endblock %}

@@ -1,0 +1,30 @@
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path("", views.home, name="home"),
+    path("login/", views.login_view, name="login"),
+    path("register/", views.register_view, name="register"),
+    path("logout/", views.logout_view, name="logout"),
+    path("dashboard/", views.dashboard, name="dashboard"),
+    path("profile/", views.profile, name="profile"),
+    path("admin-dashboard/", views.admin_dashboard, name="admin_dashboard"),
+    path("admin-dashboard/users/<int:user_id>/role/", views.update_role, name="update_role"),
+    path("admin-dashboard/users/<int:user_id>/status/", views.update_status, name="update_status"),
+    path("admin-dashboard/blogs/create/", views.create_blog, name="create_blog"),
+    path("admin-dashboard/blogs/<int:blog_id>/update/", views.update_blog, name="update_blog"),
+    path("admin-dashboard/blogs/<int:blog_id>/delete/", views.delete_blog, name="delete_blog"),
+    path("requests/", views.requests_list, name="requests"),
+    path("requests/open/", views.open_requests, name="open_requests"),
+    path("requests/<int:request_id>/", views.request_detail, name="request_detail"),
+    path("applications/", views.my_applications, name="my_applications"),
+    path("applications/<int:application_id>/accept/", views.accept_application, name="accept_application"),
+    path("applications/<int:application_id>/reject/", views.reject_application, name="reject_application"),
+    path("applications/<int:application_id>/withdraw/", views.withdraw_application, name="withdraw_application"),
+    path("requests/<int:request_id>/complete/", views.complete_request, name="complete_request"),
+    path("requests/<int:request_id>/cancel/", views.cancel_request, name="cancel_request"),
+    path("blog/", views.blog_list, name="blog_list"),
+    path("blog/<slug:post_id>/", views.blog_detail, name="blog_detail"),
+    path("profiles/<int:user_id>/", views.profile_public, name="profile_public"),
+    path("about/", views.about, name="about"),
+]

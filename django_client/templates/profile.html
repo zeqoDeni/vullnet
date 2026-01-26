@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+  <h1>Profili im</h1>
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <p>Ngarko avatar:</p>
+    <input type="file" name="avatar_file">
+    <button type="submit">Ruaj</button>
+  </form>
+</div>
+
+{% if profile %}
+<div class="card">
+  <h3>Paraqitja</h3>
+  <p><strong>Emri:</strong> {{ profile.firstName }} {{ profile.lastName }}</p>
+  <p><strong>Bio:</strong> {{ profile.bio }}</p>
+  <p><strong>Vendndodhja:</strong> {{ profile.location }}</p>
+  <p><strong>Aftësitë:</strong> {{ profile.skills }}</p>
+  <p><strong>Disponueshmëria:</strong> {% if profile.availability %}Po{% else %}Jo{% endif %}</p>
+  <p><strong>Publike:</strong> {% if profile.profilePublic %}Po{% else %}Jo{% endif %}</p>
+  <p><strong>Pikë:</strong> {{ profile.rewardPoints|default:0 }}</p>
+  <p><strong>Thirrje të përfunduara:</strong> {{ profile.completedRequests|default:0 }}</p>
+  <p><strong>Vlerësimi:</strong> {{ profile.averageRating|default:"0"|floatformat:1 }}/5 ({{ profile.reviewCount|default:0 }} vlerësime)</p>
+  {% if profile.avatarUrl %}
+  <p><img src="{{ profile.avatarUrl }}" alt="Avatar" style="width:120px; border-radius:12px;"></p>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}

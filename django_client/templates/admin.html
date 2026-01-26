@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+  <h1>Paneli i adminit</h1>
+  <div class="stats">
+    <div class="stat">Përdorues: {{ stats.users }}</div>
+    <div class="stat">Thirrje: {{ stats.requests }}</div>
+    <div class="stat">Thirrje të hapura: {{ stats.openRequests }}</div>
+    <div class="stat">Aplikime: {{ stats.applications }}</div>
+  </div>
+  <h3>Përdoruesit</h3>
+  <table>
+    <tr>
+      <th>ID</th>
+      <th>Emri</th>
+      <th>Email</th>
+      <th>Telefon</th>
+      <th>Roli</th>
+      <th>Statusi</th>
+      <th>Ndrysho rolin</th>
+      <th>Aktivo / çaktivo</th>
+    </tr>
+    {% for u in users %}
+    <tr>
+      <td>{{ u.id }}</td>
+      <td><a href="/profiles/{{ u.id }}/">{{ u.firstName }} {{ u.lastName }}</a></td>
+      <td>{{ u.email }}</td>
+      <td>{{ u.phone }}</td>
+      <td><span class="pill">{{ u.role }}</span></td>
+      <td>{% if u.active %}Aktiv{% else %}Çaktiv{% endif %}</td>
+      <td>
+        <form method="post" action="/admin-dashboard/users/{{ u.id }}/role/" style="display:inline;">
+          {% csrf_token %}
+          <select name="role">
+            <option value="USER" {% if u.role == "USER" %}selected{% endif %}>USER</option>
+            <option value="ADMIN" {% if u.role == "ADMIN" %}selected{% endif %}>ADMIN</option>
+          </select>
+          <button type="submit">Ruaj</button>
+        </form>
+      </td>
+      <td>
+        <form method="post" action="/admin-dashboard/users/{{ u.id }}/status/" style="display:inline;">
+          {% csrf_token %}
+          <input type="hidden" name="active" value="{% if u.active %}false{% else %}true{% endif %}">
+          <button type="submit">{% if u.active %}Çaktivizo{% else %}Aktivizo{% endif %}</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+
+<div id="blog-admin" data-token="{{ token }}" data-api="{{ api_base }}">
+  <div class="card admin-two-col">
+    <div>
+      <h3>Artikujt</h3>
+      <p class="muted">Ruaj përditësimet ose fshi artikullin.</p>
+      {% for b in blogs %}
+        <div class="blog-admin-row">
+          {% if b.coverImageUrl %}
+            <img src="{{ b.coverImageUrl }}" alt="{{ b.title }}" style="width:100%; max-height:140px; object-fit:cover; border-radius:10px; margin-bottom:8px;">
+          {% endif %}
+          <form method="post" action="/admin-dashboard/blogs/{{ b.id }}/update/">
+            {% csrf_token %}
+            <input type="text" name="title" value="{{ b.title }}" placeholder="Titulli">
+            <input type="text" name="summary" value="{{ b.summary }}" placeholder="Përmbledhja">
+            <textarea name="content" rows="4" placeholder="Përmbajtja">{{ b.content }}</textarea>
+            <input type="text" name="coverImageUrl" value="{{ b.coverImageUrl }}" placeholder="Link i imazhit" class="cover-url">
+            <input type="file" class="cover-file">
+            <button type="button" class="pill upload-cover">Ngarko kopertinë</button>
+            <textarea name="gallery" rows="2" placeholder="Galeria (URL me rreshta)">{% if b.gallery %}{{ b.gallery|join:'\n' }}{% endif %}</textarea>
+            <input type="file" class="gallery-files" multiple>
+            <button type="button" class="pill upload-gallery">Ngarko galeri</button>
+            <label><input type="checkbox" name="published" {% if b.published %}checked{% endif %}> Publikuar</label>
+            <div class="blog-actions">
+              <button type="submit">Ruaj</button>
+            </div>
+          </form>
+          <form method="post" action="/admin-dashboard/blogs/{{ b.id }}/delete/">
+            {% csrf_token %}
+            <button type="submit" class="danger">Fshi</button>
+          </form>
+          <p class="muted">Autori: {{ b.authorName }} • {{ b.createdAt }}</p>
+        </div>
+      {% empty %}
+        <p class="muted">Nuk ka artikuj ende.</p>
+      {% endfor %}
+    </div>
+    <div>
+      <h3>Shto artikull</h3>
+      <p class="muted">Kliko butonin për të hapur formularin në popup.</p>
+      <button type="button" onclick="document.getElementById('blog-modal').style.display='flex';">Artikull i ri</button>
+    </div>
+  </div>
+
+<div id="blog-modal" class="modal-backdrop" style="display:none;" onclick="if(event.target.id==='blog-modal'){this.style.display='none';}">
+  <div class="modal-card">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <h3 style="margin:0;">Artikull i ri</h3>
+      <button type="button" onclick="document.getElementById('blog-modal').style.display='none';" class="pill">Mbyll</button>
+    </div>
+      <form method="post" action="/admin-dashboard/blogs/create/">
+        {% csrf_token %}
+        {{ blog_form.as_p }}
+        <label>Kopertina:</label>
+        <input type="file" id="new-cover-file">
+        <button type="button" class="pill" id="upload-new-cover">Ngarko kopertinën</button>
+        <label>Galeria:</label>
+        <input type="file" id="new-gallery-files" multiple>
+        <button type="button" class="pill" id="upload-new-gallery">Ngarko galerinë</button>
+        <button type="submit">Publiko</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function() {
+    const adminRoot = document.getElementById('blog-admin');
+    if (!adminRoot) return;
+    const token = adminRoot.dataset.token;
+    const api = adminRoot.dataset.api || window.location.origin;
+    async function uploadFile(file) {
+      const fd = new FormData();
+      fd.append('file', file);
+      const res = await fetch((api || window.API_BASE_URL || '').replace(/\/+$/,'') + '/api/files/blog', {
+        method: 'POST',
+        mode: 'cors',
+        headers: { 'Authorization': 'Bearer ' + token },
+        body: fd
+      });
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || 'Ngarkimi dështoi');
+      }
+      const data = await res.json();
+      return data.url;
+    }
+
+    // Existing rows cover upload
+    adminRoot.querySelectorAll('.upload-cover').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const row = e.target.closest('.blog-admin-row');
+        const fileInput = row.querySelector('.cover-file');
+        const urlInput = row.querySelector('.cover-url');
+        if (!fileInput.files.length) { alert('Zgjidh një skedar'); return; }
+        try {
+          const url = await uploadFile(fileInput.files[0]);
+          urlInput.value = url;
+          alert('Ngarkimi u krye');
+        } catch (err) {
+          alert(err.message);
+        }
+      });
+    });
+
+    // Existing rows gallery upload
+    adminRoot.querySelectorAll('.upload-gallery').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const row = e.target.closest('.blog-admin-row');
+        const fileInput = row.querySelector('.gallery-files');
+        const galleryArea = row.querySelector('textarea[name="gallery"]');
+        if (!fileInput.files.length) { alert('Zgjidh skedarë për galeri'); return; }
+        try {
+          let urls = [];
+          for (const file of fileInput.files) {
+            urls.push(await uploadFile(file));
+          }
+          galleryArea.value = (galleryArea.value ? galleryArea.value + '\n' : '') + urls.join('\n');
+          alert('Galeria u përditësua');
+        } catch (err) {
+          alert(err.message);
+        }
+      });
+    });
+
+    // New article modal uploads
+    const newCoverFile = document.getElementById('new-cover-file');
+    const newGalleryFiles = document.getElementById('new-gallery-files');
+    const newCoverBtn = document.getElementById('upload-new-cover');
+    const newGalleryBtn = document.getElementById('upload-new-gallery');
+
+    const newCoverUrlInput = document.querySelector('#blog-modal input[name="coverImageUrl"]');
+    const newGalleryArea = document.querySelector('#blog-modal textarea[name="gallery"]');
+
+    if (newCoverBtn) {
+      newCoverBtn.addEventListener('click', async () => {
+        if (!newCoverFile.files.length) { alert('Zgjidh kopertinën'); return; }
+        try {
+          const url = await uploadFile(newCoverFile.files[0]);
+          newCoverUrlInput.value = url;
+          alert('Kopertina u ngarkua, tani kliko Publiko');
+        } catch (err) {
+          alert(err.message);
+        }
+      });
+    }
+    if (newGalleryBtn) {
+      newGalleryBtn.addEventListener('click', async () => {
+        if (!newGalleryFiles.files.length) { alert('Zgjidh imazhe për galeri'); return; }
+        try {
+          let urls = [];
+          for (const file of newGalleryFiles.files) {
+            urls.push(await uploadFile(file));
+          }
+          newGalleryArea.value = (newGalleryArea.value ? newGalleryArea.value + '\n' : '') + urls.join('\n');
+          alert('Galeria u ngarkua, tani kliko Publiko');
+        } catch (err) {
+          alert(err.message);
+        }
+      });
+    }
+  })();
+</script>
+{% endblock %}
