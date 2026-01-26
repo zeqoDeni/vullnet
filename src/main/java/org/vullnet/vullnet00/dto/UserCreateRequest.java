@@ -23,6 +23,9 @@ public class UserCreateRequest {
     @NotBlank
     private String email;
 
+    @NotBlank
+    private String phone;
+
 
     @NotBlank
     @Size(min = 8, message = "Passuordi duhet te jet te pakten 8 shkronja")

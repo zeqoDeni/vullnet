@@ -12,5 +12,10 @@ public class UserResponse {
     private String email;
     private String role;
     private boolean active;
+    private Integer rewardPoints;
+    private Integer completedRequests;
+    private Double averageRating;
+    private Integer reviewCount;
+    private String phone;
 
 }

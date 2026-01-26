@@ -82,7 +82,7 @@ public class UserController {
             Pageable pageable
     ) {
         enforceSelfOrAdmin(principal, id);
-        return helpRequestService.getByOwnerId(id, pageable);
+        return helpRequestService.getByOwnerId(id, pageable, principal.getId());
     }
 
     @GetMapping("/{id}/profile")
@@ -130,7 +130,7 @@ public class UserController {
 
     private void enforceSelfOrAdmin(UserPrincipal principal, Long userId) {
         if (principal == null) {
-            throw new AccessDeniedException("Unauthorized");
+            throw new AccessDeniedException("E paautorizuar");
         }
         if (principal.getId().equals(userId)) {
             return;
@@ -138,16 +138,16 @@ public class UserController {
         if (principal.getAuthorities().stream().anyMatch(auth -> "ROLE_ADMIN".equals(auth.getAuthority()))) {
             return;
         }
-        throw new AccessDeniedException("Forbidden");
+        throw new AccessDeniedException("E ndaluar");
     }
 
     private void enforceAdmin(UserPrincipal principal) {
         if (principal == null) {
-            throw new AccessDeniedException("Unauthorized");
+            throw new AccessDeniedException("E paautorizuar");
         }
         if (principal.getAuthorities().stream().anyMatch(auth -> "ROLE_ADMIN".equals(auth.getAuthority()))) {
             return;
         }
-        throw new AccessDeniedException("Forbidden");
+        throw new AccessDeniedException("E ndaluar");
     }
 }

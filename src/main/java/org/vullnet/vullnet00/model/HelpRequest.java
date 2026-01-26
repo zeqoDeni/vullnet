@@ -33,6 +33,9 @@ public class HelpRequest {
     @Column
     private java.time.LocalDateTime statusUpdatedAt;
 
+    @Column
+    private String imageUrl;
+
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "owner_id", nullable = false)
@@ -50,6 +53,16 @@ public class HelpRequest {
     @OneToMany(mappedBy = "helpRequest", cascade = CascadeType.ALL, orphanRemoval = true)
     private java.util.List<Application> applications = new java.util.ArrayList<>();
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "accepted_volunteer_id")
+    @JsonIgnore
+    private User acceptedVolunteer;
+
+    @Column
+    private Long acceptedApplicationId;
+
+    @Column
+    private java.time.LocalDateTime completedAt;
 
 
 

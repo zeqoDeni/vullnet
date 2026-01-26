@@ -35,16 +35,24 @@ public class HelpRequestController {
 
     @GetMapping
     public Page<HelpRequestResponse> getAll(
+            @AuthenticationPrincipal UserPrincipal principal,
             @RequestParam(value = "ownerId", required = false) Long ownerId,
             @RequestParam(value = "status", required = false) RequestStatus status,
             Pageable pageable
     ) {
-        return helpRequestService.getAll(ownerId, status, pageable);
+        Long viewerId = principal != null ? principal.getId() : null;
+        return helpRequestService.getAll(ownerId, status, pageable, viewerId);
+    }
+
+    @GetMapping("/{id:\\d+}")
+    public HelpRequestResponse getOne(@AuthenticationPrincipal UserPrincipal principal, @PathVariable("id") Long id) {
+        Long viewerId = principal != null ? principal.getId() : null;
+        return helpRequestService.getOne(id, viewerId);
     }
 
     @GetMapping("/open")
     public Page<HelpRequestResponse> getOpenRequests(Pageable pageable) {
-        return helpRequestService.getAll(null, RequestStatus.OPEN, pageable);
+        return helpRequestService.getAll(null, RequestStatus.OPEN, pageable, null);
     }
 
     @GetMapping("/{id}/applications")

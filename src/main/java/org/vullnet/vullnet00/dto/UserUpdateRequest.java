@@ -18,6 +18,9 @@ public class UserUpdateRequest {
     @Email
     private String email;
 
+    @Size(min = 1, max = 40)
+    private String phone;
+
     // optional: only update if provided
     @Size(min = 8, message = "Passuordi duhet te jet te pakten 8 shkronja")
     @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d).+$", message = "Passuordi duhet te kete shkronja dhe numra")

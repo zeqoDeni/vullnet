@@ -13,4 +13,5 @@ public class HelpRequestCreateRequest {
     private String description;
     @NotBlank
     private String location;
+    private String imageUrl;
 }

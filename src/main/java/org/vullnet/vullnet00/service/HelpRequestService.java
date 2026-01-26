@@ -23,20 +23,20 @@ public class HelpRequestService {
     private final HelpRequestRepo helpRequestRepo;
     private final UserRepo userRepo;
     private final org.springframework.core.env.Environment environment;
+    private final RewardService rewardService;
+    private final NotificationService notificationService;
 
     public HelpRequestResponse create(Long userId, HelpRequestCreateRequest req) {
 
-        // TODO 1: load user or throw 404
         User owner = userRepo.findById(userId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Përdoruesi nuk u gjend"));
 
         int maxOpen = environment.getProperty("app.limits.max-open-requests", Integer.class, 10);
         long openCount = helpRequestRepo.countByOwnerIdAndStatus(owner.getId(), RequestStatus.OPEN);
         if (openCount >= maxOpen) {
-            throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, "Too many open requests");
+            throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, "Ke arritur kufirin e thirrjeve të hapura");
         }
 
-        // TODO 2: build HelpRequest (set title/description/location/status/owner)
         HelpRequest helpRequest = HelpRequest.builder()
                 .title(req.getTitle())
                 .description(req.getDescription())
@@ -45,30 +45,36 @@ public class HelpRequestService {
                 .statusUpdatedAt(LocalDateTime.now())
                 .owner(owner)
                 .createdBy(owner)
+                .acceptedVolunteer(null)
+                .acceptedApplicationId(null)
+                .imageUrl(req.getImageUrl())
                 .build();
 
-        // TODO 3: save + return
-        return toResponse(helpRequestRepo.save(helpRequest));
+        return toResponse(helpRequestRepo.save(helpRequest), userId);
     }
 
-    public Page<HelpRequestResponse> getAll(Long ownerId, RequestStatus status, Pageable pageable) {
+    public Page<HelpRequestResponse> getAll(Long ownerId, RequestStatus status, Pageable pageable, Long viewerId) {
         if (ownerId != null && status != null) {
-            return helpRequestRepo.findByOwnerIdAndStatus(ownerId, status, pageable).map(this::toResponse);
+            return helpRequestRepo.findByOwnerIdAndStatus(ownerId, status, pageable).map(req -> toResponse(req, viewerId));
         }
         if (ownerId != null) {
-            return helpRequestRepo.findByOwnerId(ownerId, pageable).map(this::toResponse);
+            return helpRequestRepo.findByOwnerId(ownerId, pageable).map(req -> toResponse(req, viewerId));
         }
         if (status != null) {
-            return helpRequestRepo.findByStatus(status, pageable).map(this::toResponse);
+            return helpRequestRepo.findByStatus(status, pageable).map(req -> toResponse(req, viewerId));
         }
-        return helpRequestRepo.findAll(pageable).map(this::toResponse);
+        return helpRequestRepo.findAll(pageable).map(req -> toResponse(req, viewerId));
     }
 
-    public Page<HelpRequestResponse> getByOwnerId(Long ownerId, Pageable pageable) {
-        return helpRequestRepo.findByOwnerId(ownerId, pageable).map(this::toResponse);
+    public Page<HelpRequestResponse> getByOwnerId(Long ownerId, Pageable pageable, Long viewerId) {
+        return helpRequestRepo.findByOwnerId(ownerId, pageable).map(req -> toResponse(req, viewerId));
     }
 
-    private HelpRequestResponse toResponse(HelpRequest request) {
+    private HelpRequestResponse toResponse(HelpRequest request, Long viewerId) {
+        boolean canSeeContact = viewerId != null && (
+                (request.getOwner() != null && viewerId.equals(request.getOwner().getId())) ||
+                        (request.getAcceptedVolunteer() != null && viewerId.equals(request.getAcceptedVolunteer().getId()))
+        );
         return HelpRequestResponse.builder()
                 .id(request.getId())
                 .title(request.getTitle())
@@ -78,36 +84,61 @@ public class HelpRequestService {
                 .ownerId(request.getOwner() != null ? request.getOwner().getId() : null)
                 .ownerName(request.getOwner() != null ? (request.getOwner().getFirstName() + " " + request.getOwner().getLastName()) : null)
                 .ownerAvatar(request.getOwner() != null ? request.getOwner().getAvatarUrl() : null)
+                .ownerPhone(canSeeContact && request.getOwner() != null ? request.getOwner().getPhone() : null)
+                .acceptedVolunteerId(request.getAcceptedVolunteer() != null ? request.getAcceptedVolunteer().getId() : null)
+                .acceptedVolunteerName(request.getAcceptedVolunteer() != null ? request.getAcceptedVolunteer().getFirstName() + " " + request.getAcceptedVolunteer().getLastName() : null)
+                .acceptedVolunteerPhone(canSeeContact && request.getAcceptedVolunteer() != null ? request.getAcceptedVolunteer().getPhone() : null)
+                .completedAt(request.getCompletedAt())
+                .imageUrl(request.getImageUrl())
                 .build();
     }
 
     @org.springframework.transaction.annotation.Transactional
     public HelpRequestResponse complete(Long userId, Long requestId) {
         HelpRequest request = helpRequestRepo.findById(requestId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Request not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Thirrja nuk u gjend"));
         if (!request.getOwner().getId().equals(userId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only owner can complete");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Vetëm pronari mund ta përfundojë");
         }
         if (request.getStatus() != RequestStatus.IN_PROGRESS) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Request is not in progress");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Thirrja nuk është në progres");
+        }
+        if (request.getAcceptedVolunteer() == null) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Nuk ka vullnetar të pranuar për këtë thirrje");
         }
         request.setStatus(RequestStatus.COMPLETED);
         request.setStatusUpdatedAt(LocalDateTime.now());
-        return toResponse(helpRequestRepo.save(request));
+        request.setCompletedAt(LocalDateTime.now());
+        HelpRequest saved = helpRequestRepo.save(request);
+        rewardService.awardForCompletion(saved.getAcceptedVolunteer());
+        notificationService.notifyEmail(saved.getOwner(), "Thirrja u përfundua", "Thirrja \"" + saved.getTitle() + "\" u shënua si e përfunduar.");
+        notificationService.notifyEmail(saved.getAcceptedVolunteer(), "Thirrja u përfundua", "Thirrja \"" + saved.getTitle() + "\" u përfundua.");
+        return toResponse(saved, userId);
     }
 
     @org.springframework.transaction.annotation.Transactional
     public HelpRequestResponse cancel(Long userId, Long requestId) {
         HelpRequest request = helpRequestRepo.findById(requestId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Request not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Thirrja nuk u gjend"));
         if (!request.getOwner().getId().equals(userId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only owner can cancel");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Vetëm pronari mund ta anulojë");
         }
         if (request.getStatus() == RequestStatus.COMPLETED || request.getStatus() == RequestStatus.CANCELLED) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Request cannot be cancelled");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Thirrja nuk mund të anulohet");
         }
         request.setStatus(RequestStatus.CANCELLED);
         request.setStatusUpdatedAt(LocalDateTime.now());
-        return toResponse(helpRequestRepo.save(request));
+        HelpRequest saved = helpRequestRepo.save(request);
+        if (saved.getAcceptedVolunteer() != null) {
+            notificationService.notifyEmail(saved.getAcceptedVolunteer(), "Thirrja u anulua", "Thirrja \"" + saved.getTitle() + "\" u anulua.");
+            notificationService.notifySms(saved.getAcceptedVolunteer(), "Thirrja \"" + saved.getTitle() + "\" u anulua.");
+        }
+        return toResponse(saved, userId);
+    }
+
+    public HelpRequestResponse getOne(Long id, Long viewerId) {
+        HelpRequest request = helpRequestRepo.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Thirrja nuk u gjend"));
+        return toResponse(request, viewerId);
     }
 }
