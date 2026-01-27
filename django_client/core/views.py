@@ -96,13 +96,50 @@ def dashboard(request):
         return redirect("login")
     rewards = {}
     leaderboard = []
+    notifications = []
+    user = request.session.get("user") or {}
+    user_id = user.get("id")
+
     rewards_resp = api.get_rewards(token)
     if rewards_resp.status_code == 200:
         rewards = rewards_resp.json()
     lb_resp = api.get_leaderboard(params={"page": 0, "size": 5})
     if lb_resp.status_code == 200:
         leaderboard = lb_resp.json().get("content", [])
-    return render(request, "dashboard.html", {"user": request.session.get("user"), "rewards": rewards, "leaderboard": leaderboard})
+    apps_resp = api.my_applications(token, params={"page": 0, "size": 6})
+    if apps_resp.status_code == 200:
+        for a in apps_resp.json().get("content", []):
+            notifications.append(
+                {
+                    "type": "Aplikim",
+                    "title": f"Thirrja #{a.get('helpRequestId')}",
+                    "status": a.get("status"),
+                    "link": f"/requests/{a.get('helpRequestId')}/",
+                }
+            )
+    req_resp = api.get_requests(token, params={"page": 0, "size": 6})
+    if req_resp.status_code == 200 and user_id:
+        for r in req_resp.json().get("content", []):
+            if r.get("ownerId") != user_id:
+                continue
+            notifications.append(
+                {
+                    "type": "Thirrje",
+                    "title": r.get("title") or f"Thirrja #{r.get('id')}",
+                    "status": r.get("status"),
+                    "link": f"/requests/{r.get('id')}/",
+                }
+            )
+    return render(
+        request,
+        "dashboard.html",
+        {
+            "user": request.session.get("user"),
+            "rewards": rewards,
+            "leaderboard": leaderboard,
+            "notifications": notifications[:8],
+        },
+    )
 
 
 @require_http_methods(["GET", "POST"])
@@ -141,7 +178,8 @@ def profile(request):
         "profilePublic": profile_data.get("profilePublic", True),
     }
     form = ProfileForm(initial=form_initial)
-    return render(request, "profile.html", {"form": form, "profile": profile_data})
+    skills_list = [s.strip() for s in (profile_data.get("skills") or "").split(",") if s.strip()]
+    return render(request, "profile.html", {"form": form, "profile": profile_data, "skills_list": skills_list})
 
 
 @require_http_methods(["GET", "POST"])
@@ -158,18 +196,26 @@ def requests_list(request):
             return redirect("requests")
         messages.error(request, response.json().get("message", "Krijimi dështoi"))
 
-    response = api.get_requests(token, params={"page": 0, "size": 20})
+    q = request.GET.get("q")
+    params = {"page": 0, "size": 20}
+    if q:
+        params["q"] = q
+    response = api.get_requests(token, params=params)
     data = response.json() if response.status_code == 200 else {"content": []}
-    return render(request, "requests.html", {"requests": data.get("content", []), "form": form})
+    return render(request, "requests.html", {"requests": data.get("content", []), "form": form, "q": q})
 
 
 def open_requests(request):
     token = _get_token(request)
     if not token:
         return redirect("login")
-    response = api.get_open_requests(token, params={"page": 0, "size": 20})
+    q = request.GET.get("q")
+    params = {"page": 0, "size": 20}
+    if q:
+        params["q"] = q
+    response = api.get_open_requests(token, params=params)
     data = response.json() if response.status_code == 200 else {"content": []}
-    return render(request, "open_requests.html", {"requests": data.get("content", [])})
+    return render(request, "open_requests.html", {"requests": data.get("content", []), "q": q})
 
 
 @require_http_methods(["GET", "POST"])
@@ -191,11 +237,15 @@ def request_detail(request, request_id):
 
     apply_form = ApplicationForm(request.POST or None)
     review_form = ReviewForm(request.POST or None)
+    messages_list = []
 
     accepted_volunteer_id = request_data.get("acceptedVolunteerId")
     owner_id = request_data.get("ownerId")
     status = request_data.get("status")
     reviewee_id = None
+    can_chat = False
+    if user_id and (user_id == owner_id or user_id == accepted_volunteer_id):
+        can_chat = True
     if status == "COMPLETED":
         if user_id == owner_id:
             reviewee_id = accepted_volunteer_id
@@ -217,6 +267,18 @@ def request_detail(request, request_id):
                 messages.success(request, "Aplikimi u dërgua")
                 return redirect("request_detail", request_id=request_id)
             messages.error(request, response.json().get("message", "Aplikimi dështoi"))
+        elif form_type == "chat" and can_chat:
+            body = request.POST.get("chat_body", "")
+            if body.strip():
+                resp = api.send_request_message(token, request_id, {"body": body})
+                if resp and resp.status_code in (200, 201):
+                    messages.success(request, "Mesazhi u dërgua")
+                    return redirect("request_detail", request_id=request_id)
+                else:
+                    try:
+                        messages.error(request, resp.json().get("message", "Mesazhi dështoi"))
+                    except Exception:
+                        messages.error(request, "Mesazhi dështoi")
 
     apps_response = api.get_request_applications(token, request_id, params={"page": 0, "size": 20})
     apps_data = apps_response.json() if apps_response.status_code == 200 else {"content": []}
@@ -231,6 +293,11 @@ def request_detail(request, request_id):
         if reviews_resp.status_code == 200:
             volunteer_reviews = reviews_resp.json().get("content", [])
 
+    if can_chat:
+        msgs_resp = api.get_request_messages(token, request_id, params={"page": 0, "size": 50})
+        if msgs_resp and msgs_resp.status_code == 200:
+            messages_list = msgs_resp.json().get("content", [])
+
     return render(
         request,
         "request_detail.html",
@@ -242,6 +309,8 @@ def request_detail(request, request_id):
             "review_form": review_form,
             "can_review": bool(reviewee_id),
             "volunteer_reviews": volunteer_reviews,
+            "can_chat": can_chat,
+            "chat_messages": messages_list,
         },
     )
 
@@ -348,7 +417,8 @@ def profile_public(request, user_id):
     response = api.get_profile(token, user_id)
     if response.status_code == 200:
         profile_data = response.json()
-        return render(request, "profile_public.html", {"profile": profile_data})
+        skills_list = [s.strip() for s in (profile_data.get("skills") or "").split(",") if s.strip()]
+        return render(request, "profile_public.html", {"profile": profile_data, "skills_list": skills_list})
     messages.error(request, response.json().get("message", "Nuk lejohet ose profili privat"))
     return redirect("open_requests")
 

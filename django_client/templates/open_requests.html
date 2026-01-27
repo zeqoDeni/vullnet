@@ -2,31 +2,33 @@
 {% block content %}
 <div class="card">
   <h1>Thirrje të hapura</h1>
-  <table>
-    <tr>
-      <th>ID</th>
-      <th>Titull</th>
-      <th>Vendndodhja</th>
-      <th>Status</th>
-      <th>Pronar</th>
-      <th>Avatar</th>
-    </tr>
+  <form method="get" style="margin-bottom:12px;">
+    <input type="text" name="q" placeholder="Kërko për titull/vend/tekst" value="{{ q|default:'' }}">
+    <button type="submit" class="pill">Filtro</button>
+  </form>
+  <div class="card-grid">
     {% for r in requests %}
-    <tr>
-      <td>{{ r.id }}</td>
-      <td><a href="/requests/{{ r.id }}/">{{ r.title }}</a></td>
-      <td>{{ r.location }}</td>
-      <td><span class="pill">{{ r.status }}</span></td>
-      <td><a href="/profiles/{{ r.ownerId }}/">{{ r.ownerName }}</a></td>
-      <td>
-        {% if r.ownerAvatar %}
-          <img src="{{ r.ownerAvatar }}" alt="avatar" style="width:36px; height:36px; border-radius:50%; object-fit:cover;">
-        {% else %}
-          <img src="https://api.dicebear.com/7.x/identicon/svg?seed={{ r.ownerId }}" alt="avatar" style="width:36px; height:36px; border-radius:50%; object-fit:cover;">
-        {% endif %}
-      </td>
-    </tr>
+    <div class="request-card">
+      {% if r.imageUrl %}
+        <img src="{{ r.imageUrl }}" alt="foto">
+      {% else %}
+        <div style="width:88px; height:88px; border:1px dashed var(--border); border-radius:12px; display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:12px;">Pa foto</div>
+      {% endif %}
+      <div class="request-card-body">
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+          <div class="pill">#{{ r.id }}</div>
+          <span class="status-pill" data-status="{{ r.status }}">{{ r.status }}</span>
+        </div>
+        <h4 style="margin:4px 0 0 0;"><a href="/requests/{{ r.id }}/">{{ r.title }}</a></h4>
+        <p class="muted">{{ r.location }}</p>
+        <p class="muted">Pronar: <a href="/profiles/{{ r.ownerId }}/">{{ r.ownerName }}</a></p>
+        <div class="chip-row">
+          <a class="chip link" href="/requests/{{ r.id }}/">Detajet</a>
+          <a class="chip" href="/requests/{{ r.id }}/#apply">Apliko</a>
+        </div>
+      </div>
+    </div>
     {% endfor %}
-  </table>
+  </div>
 </div>
 {% endblock %}

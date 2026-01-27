@@ -241,3 +241,19 @@ def delete_blog(token, blog_id):
         f"{settings.API_BASE_URL}/api/admin/blogs/{blog_id}",
         headers=_headers(token),
     )
+
+
+def get_request_messages(token, request_id, params=None):
+    return requests.get(
+        f"{settings.API_BASE_URL}/api/requests/{request_id}/messages",
+        headers=_headers(token),
+        params=params,
+    )
+
+
+def send_request_message(token, request_id, data):
+    return requests.post(
+        f"{settings.API_BASE_URL}/api/requests/{request_id}/messages",
+        headers=_headers(token),
+        json=data,
+    )

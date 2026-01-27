@@ -17,5 +17,6 @@ public class UserResponse {
     private Double averageRating;
     private Integer reviewCount;
     private String phone;
+    private java.util.List<String> badges;
 
 }

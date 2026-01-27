@@ -1,19 +1,84 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="card">
-  <h1>Profili</h1>
-  {% if profile.avatarUrl %}
-    <img src="{{ profile.avatarUrl }}" alt="Avatar" style="width:120px; border-radius:12px;">
-  {% else %}
-    <img src="https://api.dicebear.com/7.x/identicon/svg?seed={{ profile.id }}" alt="Avatar" style="width:120px; border-radius:12px;">
-  {% endif %}
-  <p><strong>Emri:</strong> {{ profile.firstName }} {{ profile.lastName }}</p>
-  <p><strong>Bio:</strong> {{ profile.bio }}</p>
-  <p><strong>Vendndodhja:</strong> {{ profile.location }}</p>
-  <p><strong>Aftësitë:</strong> {{ profile.skills }}</p>
-  <p><strong>Disponueshmëria:</strong> {% if profile.availability %}Po{% else %}Jo{% endif %}</p>
-  <p><strong>Vlerësimi:</strong> {{ profile.averageRating|default:"0"|floatformat:1 }}/5 ({{ profile.reviewCount|default:0 }} vlerësime)</p>
-  <p><strong>Pikë:</strong> {{ profile.rewardPoints|default:0 }}</p>
-  <p class="muted">Për të lënë një vlerësim, përdor faqen e thirrjes pasi të jetë përfunduar.</p>
+<div class="profile-layout">
+  <section class="profile-hero card">
+    <div class="profile-cover soft"></div>
+    <div class="profile-header">
+      <div class="avatar-frame lg">
+        {% if profile.avatarUrl %}
+          <img src="{{ profile.avatarUrl }}" alt="Avatar">
+        {% else %}
+          <img src="https://api.dicebear.com/7.x/identicon/svg?seed={{ profile.id }}" alt="Avatar">
+        {% endif %}
+      </div>
+      <div class="profile-meta">
+        <p class="eyebrow">Profili publik</p>
+        <h1>{{ profile.firstName }} {{ profile.lastName }}</h1>
+        <p class="muted">
+          {% if profile.location %}{{ profile.location }} · {% endif %}
+          {% if profile.availability %}Aktiv{% else %}Jo aktiv{% endif %}
+        </p>
+        <div class="chip-row">
+          <span class="chip">Pikë: {{ profile.rewardPoints|default:0 }}</span>
+          <span class="chip">Vlerësim: {{ profile.averageRating|default:"0"|floatformat:1 }}/5</span>
+          <span class="chip">{{ profile.reviewCount|default:0 }} vlerësime</span>
+        </div>
+        {% if profile.badges %}
+        <div class="badge-row">
+          {% for b in profile.badges %}
+            <span class="badge-chip">{{ b }}</span>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+      <div class="profile-stats">
+        <div class="stat-tile">
+          <p class="stat-label">Thirrje të përfunduara</p>
+          <p class="stat-value">{{ profile.completedRequests|default:0 }}</p>
+          <p class="stat-hint">Besueshmëria ndërtohet nga veprat</p>
+        </div>
+        <div class="stat-tile">
+          <p class="stat-label">Telefon</p>
+          <p class="stat-value">{{ profile.phone|default:"I fshehur" }}</p>
+          <p class="stat-hint">Shfaqet vetëm kur lejohet</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="profile-content">
+    <div class="card profile-preview">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Rreth përdoruesit</p>
+          <h3>{{ profile.firstName }} ndihmon në mënyrën e vet</h3>
+          <p class="muted">Bio dhe aftësi të shkruara nga përdoruesi.</p>
+        </div>
+      </div>
+      <div class="preview-grid">
+        <div>
+          <p class="muted label">Bio</p>
+          <p class="lead">{{ profile.bio|default:"Ky përdorues s'ka shtuar ende një bio." }}</p>
+        </div>
+        <div>
+          <p class="muted label">Aftësitë</p>
+          <div class="pill-cloud">
+            {% if skills_list %}
+              {% for skill in skills_list %}
+                <span class="pill">{{ skill }}</span>
+              {% endfor %}
+            {% else %}
+              <span class="pill pill-ghost">Aftësitë do të shfaqen këtu</span>
+            {% endif %}
+          </div>
+          <p class="muted label" style="margin-top:12px;">Disponueshmëri</p>
+          <span class="pill {% if profile.availability %}pill-success{% else %}pill-ghost{% endif %}">
+            {% if profile.availability %}Aktiv për thirrje{% else %}Jo aktiv{% endif %}
+          </span>
+        </div>
+      </div>
+      <p class="muted" style="margin-top:14px;">Për të lënë një vlerësim, përfundo një thirrje së bashku dhe përdor seksionin e vlerësimeve të thirrjes.</p>
+    </div>
+  </section>
 </div>
 {% endblock %}

@@ -53,7 +53,12 @@ public class HelpRequestService {
         return toResponse(helpRequestRepo.save(helpRequest), userId);
     }
 
-    public Page<HelpRequestResponse> getAll(Long ownerId, RequestStatus status, Pageable pageable, Long viewerId) {
+    public Page<HelpRequestResponse> getAll(Long ownerId, RequestStatus status, String search, Pageable pageable, Long viewerId) {
+        if (search != null && !search.isBlank()) {
+            String q = search.trim();
+            return helpRequestRepo.findByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCaseOrLocationContainingIgnoreCase(q, q, q, pageable)
+                    .map(req -> toResponse(req, viewerId));
+        }
         if (ownerId != null && status != null) {
             return helpRequestRepo.findByOwnerIdAndStatus(ownerId, status, pageable).map(req -> toResponse(req, viewerId));
         }

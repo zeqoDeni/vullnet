@@ -38,10 +38,11 @@ public class HelpRequestController {
             @AuthenticationPrincipal UserPrincipal principal,
             @RequestParam(value = "ownerId", required = false) Long ownerId,
             @RequestParam(value = "status", required = false) RequestStatus status,
+            @RequestParam(value = "q", required = false) String search,
             Pageable pageable
     ) {
         Long viewerId = principal != null ? principal.getId() : null;
-        return helpRequestService.getAll(ownerId, status, pageable, viewerId);
+        return helpRequestService.getAll(ownerId, status, search, pageable, viewerId);
     }
 
     @GetMapping("/{id:\\d+}")
@@ -52,7 +53,7 @@ public class HelpRequestController {
 
     @GetMapping("/open")
     public Page<HelpRequestResponse> getOpenRequests(Pageable pageable) {
-        return helpRequestService.getAll(null, RequestStatus.OPEN, pageable, null);
+        return helpRequestService.getAll(null, RequestStatus.OPEN, null, pageable, null);
     }
 
     @GetMapping("/{id}/applications")

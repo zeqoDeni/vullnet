@@ -68,6 +68,19 @@ public class AuthService {
                 .averageRating(u.getAverageRating())
                 .reviewCount(u.getReviewCount())
                 .phone(u.getPhone())
+                .badges(computeBadges(u))
                 .build();
+    }
+
+    private java.util.List<String> computeBadges(User u) {
+        java.util.List<String> list = new java.util.ArrayList<>();
+        int pts = u.getRewardPoints() != null ? u.getRewardPoints() : 0;
+        int completed = u.getCompletedRequests() != null ? u.getCompletedRequests() : 0;
+        double rating = u.getAverageRating() != null ? u.getAverageRating() : 0.0;
+        if (pts >= 200) list.add("Kampion");
+        else if (pts >= 100) list.add("Aktiv");
+        if (completed >= 5) list.add("I besueshëm");
+        if (rating >= 4.5 && u.getReviewCount() != null && u.getReviewCount() >= 5) list.add("Vlerësim i lartë");
+        return list;
     }
 }

@@ -20,6 +20,7 @@ public class FileStorageService {
 
     public String storeAvatar(Long userId, MultipartFile file) {
         try {
+            validateImage(file);
             String uploadDir = environment.getProperty("app.upload.dir", "/tmp/vullnet/uploads");
             Path baseDir = Paths.get(uploadDir, "avatars");
             Files.createDirectories(baseDir);
@@ -38,6 +39,7 @@ public class FileStorageService {
 
     public String storeBlogImage(Long userId, MultipartFile file) {
         try {
+            validateImage(file);
             String uploadDir = environment.getProperty("app.upload.dir", "/tmp/vullnet/uploads");
             Path baseDir = Paths.get(uploadDir, "blog");
             Files.createDirectories(baseDir);
@@ -56,6 +58,7 @@ public class FileStorageService {
 
     public String storeRequestImage(Long userId, MultipartFile file) {
         try {
+            validateImage(file);
             String uploadDir = environment.getProperty("app.upload.dir", "/tmp/vullnet/uploads");
             Path baseDir = Paths.get(uploadDir, "requests");
             Files.createDirectories(baseDir);
@@ -77,5 +80,16 @@ public class FileStorageService {
         int idx = name.lastIndexOf('.');
         if (idx == -1) return "";
         return name.substring(idx + 1);
+    }
+
+    private void validateImage(MultipartFile file) throws IOException {
+        long maxBytes = environment.getProperty("app.upload.max-bytes", Long.class, 10 * 1024 * 1024L);
+        if (file.getSize() > maxBytes) {
+            throw new IOException("Skedari është shumë i madh");
+        }
+        String contentType = file.getContentType();
+        if (contentType == null || (!contentType.startsWith("image/"))) {
+            throw new IOException("Lejohen vetëm imazhe");
+        }
     }
 }

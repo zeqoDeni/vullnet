@@ -1,29 +1,33 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="card">
-  <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+  <div style="display:grid; grid-template-columns: 1.5fr 1fr; gap:16px; align-items:start;">
     <div>
       <div class="pill">Thirrja #{{ request_id }}</div>
-      <h1>{{ request_data.title }}</h1>
+      <h1 style="margin:4px 0 6px 0;">{{ request_data.title }}</h1>
       <p class="muted">{{ request_data.location }}</p>
       <p>{{ request_data.description }}</p>
       {% if request_data.imageUrl %}
         <img src="{{ request_data.imageUrl }}" alt="Foto" style="width:100%; max-width:520px; border-radius:12px; margin:10px 0; object-fit:cover;">
       {% endif %}
-      <p class="muted">Status: <strong>{{ request_data.status }}</strong></p>
-      <p class="muted">Pronar: <a href="/profiles/{{ request_data.ownerId }}/">{{ request_data.ownerName }}</a></p>
-      {% if request_data.acceptedVolunteerId %}
-        <p>Vullnetari i pranuar: <a href="/profiles/{{ request_data.acceptedVolunteerId }}/">{{ request_data.acceptedVolunteerName }}</a></p>
-      {% else %}
-        <p class="muted">Ende pa vullnetar të pranuar</p>
-      {% endif %}
     </div>
-    {% if request_data.acceptedVolunteerId and request_data.status == "IN_PROGRESS" and request.session.user.id == request_data.ownerId %}
-      <form method="post" action="/requests/{{ request_id }}/complete/">
-        {% csrf_token %}
-        <button type="submit">Shëno si e përfunduar</button>
-      </form>
-    {% endif %}
+    <div>
+      <div class="card" style="margin:0; box-shadow:none; border:1px solid var(--border);">
+        <p class="muted">Status: <strong>{{ request_data.status }}</strong></p>
+        <p class="muted">Pronar: <a href="/profiles/{{ request_data.ownerId }}/">{{ request_data.ownerName }}</a></p>
+        {% if request_data.acceptedVolunteerId %}
+          <p>Vullnetari: <a href="/profiles/{{ request_data.acceptedVolunteerId }}/">{{ request_data.acceptedVolunteerName }}</a></p>
+        {% else %}
+          <p class="muted">Ende pa vullnetar të pranuar</p>
+        {% endif %}
+        {% if request_data.acceptedVolunteerId and request_data.status == "IN_PROGRESS" and request.session.user.id == request_data.ownerId %}
+          <form method="post" action="/requests/{{ request_id }}/complete/">
+            {% csrf_token %}
+            <button type="submit">Shëno si e përfunduar</button>
+          </form>
+        {% endif %}
+      </div>
+    </div>
   </div>
 </div>
 
@@ -95,6 +99,29 @@
   {% else %}
     <p class="muted">Kontakti shfaqet vetëm për palët e përfshira.</p>
   {% endif %}
+</div>
+{% endif %}
+
+{% if can_chat %}
+<div class="card">
+  <h3>Bisedë</h3>
+  <div class="chat-box">
+    {% for msg in chat_messages %}
+      <div class="chat-msg">
+        <p style="margin:0;"><strong>{{ msg.senderName }}</strong></p>
+        <p class="muted">{{ msg.createdAt }}</p>
+        <p>{{ msg.body }}</p>
+      </div>
+    {% empty %}
+      <p class="muted">Nuk ka mesazhe ende.</p>
+    {% endfor %}
+  </div>
+  <form method="post" style="margin-top:12px;">
+    {% csrf_token %}
+    <input type="hidden" name="form_type" value="chat">
+    <textarea name="chat_body" rows="2" style="width:100%;" placeholder="Shkruaj mesazhin"></textarea>
+    <button type="submit">Dërgo mesazh</button>
+  </form>
 </div>
 {% endif %}
 

@@ -30,7 +30,7 @@ public class HelpRequest {
     @Column(nullable = false)
     private RequestStatus status;
 
-    @Column
+    @Column(name = "status_uwpdated_at")
     private java.time.LocalDateTime statusUpdatedAt;
 
     @Column

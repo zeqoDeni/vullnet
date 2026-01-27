@@ -18,6 +18,7 @@ class RequestForm(forms.Form):
     title = forms.CharField(label="Titulli")
     description = forms.CharField(widget=forms.Textarea, label="Përshkrimi")
     location = forms.CharField(label="Vendndodhja")
+    imageUrl = forms.CharField(required=False, widget=forms.HiddenInput())
 
 
 class ApplicationForm(forms.Form):

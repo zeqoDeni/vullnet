@@ -1,8 +1,14 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="card">
-  <h1>Mirë se erdhe, {{ user.firstName }} {{ user.lastName }}</h1>
-  <p class="muted">Lëviz shpejt: krijo thirrje, apliko, menaxho profilin dhe ndiq pikët.</p>
+<div class="card" id="tour-hero">
+  <div class="section-head">
+    <div>
+      <p class="eyebrow">Mirë se erdhe, {{ user.firstName }} {{ user.lastName }}</p>
+      <h1>Orientohu shpejt dhe nis veprimin</h1>
+      <p class="muted">Krijo thirrje, apliko për të ndihmuar, ndiq pikët dhe mos humb asnjë status.</p>
+    </div>
+    <div class="pill">Përdor gjuhën shqip + veprime të shpejta</div>
+  </div>
   <div class="stats">
     <div class="stat">
       <div class="pill">Pikë</div>
@@ -20,18 +26,64 @@
       <p class="muted">{{ rewards.reviewCount|default:0 }} vlerësime</p>
     </div>
   </div>
-  <div class="stats">
-    <div class="stat"><a href="/requests/">Krijo / menaxho thirrje</a></div>
-    <div class="stat"><a href="/requests/open/">Shfleto thirrje të hapura</a></div>
-    <div class="stat"><a href="/applications/">Aplikimet e mia</a></div>
-    <div class="stat"><a href="/profile/">Përditëso profilin</a></div>
+  <div class="quick-grid" id="tour-shortcuts">
+    <a class="quick-card" href="/requests/">
+      <p class="eyebrow">Pronari</p>
+      <h3>Krijo / menaxho thirrje</h3>
+      <p class="muted">Ngarko foto, përshkrim, kontakto dhe fto vullnetarë.</p>
+    </a>
+    <a class="quick-card" href="/requests/open/">
+      <p class="eyebrow">Vullnetar</p>
+      <h3>Shfleto thirrje të hapura</h3>
+      <p class="muted">Apliko shpejt dhe ndiq statusin.</p>
+    </a>
+    <a class="quick-card" href="/applications/">
+      <p class="eyebrow">Statuset</p>
+      <h3>Aplikimet e mia</h3>
+      <p class="muted">Shiko pranime, refuzime ose në pritje.</p>
+    </a>
+    <a class="quick-card" href="/profile/">
+      <p class="eyebrow">Identitet</p>
+      <h3>Përditëso profilin</h3>
+      <p class="muted">Avatar, bio, aftësi dhe distinktivë.</p>
+    </a>
     {% if user.role == "ADMIN" %}
-    <div class="stat"><a href="/admin-dashboard/">Paneli i adminit</a></div>
+    <a class="quick-card" href="/admin-dashboard/">
+      <p class="eyebrow">Admin</p>
+      <h3>Paneli i adminit</h3>
+      <p class="muted">Përdorues, blog, statistika.</p>
+    </a>
     {% endif %}
   </div>
 </div>
 
-<div class="card">
+<div class="card" id="tour-notifs">
+  <div class="section-head">
+    <div>
+      <p class="eyebrow">Njoftime & veprime</p>
+      <h3>Shih çfarë ka ndryshuar së fundi</h3>
+    </div>
+    <a class="pill link" href="/applications/">Shko te aplikimet</a>
+  </div>
+  <div class="notification-list">
+    {% for n in notifications %}
+      <div class="notification-row">
+        <div>
+          <p class="muted" style="margin:0;">{{ n.type }}</p>
+          <strong><a href="{{ n.link }}">{{ n.title }}</a></strong>
+          <div class="chip-row">
+            <span class="status-pill" data-status="{{ n.status|default:'UNKNOWN' }}">{{ n.status|default:'—' }}</span>
+          </div>
+        </div>
+        <a class="pill" href="{{ n.link }}">Shko</a>
+      </div>
+    {% empty %}
+      <p class="muted">Asnjë njoftim. Apliko ose krijo një thirrje për të parë ndryshimet.</p>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="card" id="tour-leaderboard">
   <h3>Leaderboard i vullnetarëve</h3>
   <p class="muted">Top 5 sipas pikëve</p>
   <div class="leaderboard">
@@ -48,4 +100,33 @@
     {% endfor %}
   </div>
 </div>
+
+<div class="tour-popover" id="dashboard-tour" style="display:none;">
+  <div class="tour-inner">
+    <p class="eyebrow">Tur i shpejtë</p>
+    <h4>3 pika për t'u nisur</h4>
+    <ol>
+      <li>Paneli i mësipërm ka shkurtesat kryesore (krijo thirrje, aplikime, profil).</li>
+      <li>Njoftimet këtu tregojnë statuset e aplikimeve dhe thirrjeve të tua.</li>
+      <li>Leaderboard të ndihmon të shohësh motivimin dhe distinktivët e komunitetit.</li>
+    </ol>
+    <div class="actions">
+      <button type="button" class="ghost-btn" id="tour-hide">Mbyll</button>
+      <button type="button" id="tour-done">E kuptova</button>
+    </div>
+  </div>
+</div>
+<script>
+  (function(){
+    const seenKey = 'vullnet_dashboard_tour_seen';
+    const tour = document.getElementById('dashboard-tour');
+    if (!tour) return;
+    if (!localStorage.getItem(seenKey)) {
+      tour.style.display = 'block';
+    }
+    const hide = () => { tour.style.display = 'none'; localStorage.setItem(seenKey, '1'); };
+    document.getElementById('tour-hide')?.addEventListener('click', hide);
+    document.getElementById('tour-done')?.addEventListener('click', hide);
+  })();
+</script>
 {% endblock %}

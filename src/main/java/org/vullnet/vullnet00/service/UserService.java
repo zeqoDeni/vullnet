@@ -19,6 +19,17 @@ import java.util.List;
 public class UserService {
     final private UserRepo repo;
     private final PasswordEncoder passwordEncoder;
+    private java.util.List<String> badges(User u) {
+        java.util.List<String> list = new java.util.ArrayList<>();
+        int pts = u.getRewardPoints() != null ? u.getRewardPoints() : 0;
+        int completed = u.getCompletedRequests() != null ? u.getCompletedRequests() : 0;
+        double rating = u.getAverageRating() != null ? u.getAverageRating() : 0.0;
+        if (pts >= 200) list.add("Kampion");
+        else if (pts >= 100) list.add("Aktiv");
+        if (completed >= 5) list.add("I besueshëm");
+        if (rating >= 4.5 && u.getReviewCount() != null && u.getReviewCount() >= 5) list.add("Vlerësim i lartë");
+        return list;
+    }
     public UserResponse create(UserCreateRequest req) {
         if (repo.existsByEmail(req.getEmail())) {
             throw new RuntimeException("Emaili është në përdorim");
@@ -124,6 +135,7 @@ public class UserService {
                 .averageRating(u.getAverageRating())
                 .reviewCount(u.getReviewCount())
                 .phone(u.getPhone())
+                .badges(badges(u))
                 .build();
     }
 
@@ -144,6 +156,7 @@ public class UserService {
                 .averageRating(u.getAverageRating())
                 .reviewCount(u.getReviewCount())
                 .phone(u.getPhone())
+                .badges(badges(u))
                 .build();
     }
 

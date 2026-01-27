@@ -11,4 +11,5 @@ public interface HelpRequestRepo extends JpaRepository<HelpRequest, Long> {
     Page<HelpRequest> findByOwnerIdAndStatus(Long ownerId, org.vullnet.vullnet00.model.RequestStatus status, Pageable pageable);
     long countByOwnerIdAndStatus(Long ownerId, org.vullnet.vullnet00.model.RequestStatus status);
     long countByStatus(org.vullnet.vullnet00.model.RequestStatus status);
+    Page<HelpRequest> findByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCaseOrLocationContainingIgnoreCase(String q1, String q2, String q3, Pageable pageable);
 }

@@ -1,31 +1,158 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="card">
-  <h1>Profili im</h1>
-  <form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <p>Ngarko avatar:</p>
-    <input type="file" name="avatar_file">
-    <button type="submit">Ruaj</button>
-  </form>
-</div>
+<div class="profile-layout">
+  <section class="profile-hero card">
+    <div class="profile-cover"></div>
+    <div class="profile-header">
+      <div class="avatar-frame">
+        {% if profile.avatarUrl %}
+          <img src="{{ profile.avatarUrl }}" alt="Avatar">
+        {% else %}
+          <img src="https://api.dicebear.com/7.x/identicon/svg?seed={{ profile.id|default:'user' }}" alt="Avatar">
+        {% endif %}
+        <span class="pill pill-ghost">ID #{{ profile.id|default:"—" }}</span>
+      </div>
+      <div class="profile-meta">
+        <p class="eyebrow">Profili im</p>
+        <h1>{{ profile.firstName|default:"Anëtar" }} {{ profile.lastName|default:"" }}</h1>
+        <p class="muted">
+          {% if profile.location %}{{ profile.location }} · {% endif %}
+          {% if profile.availability %}Gati për të ndihmuar{% else %}Momentalisht jo në dispozicion{% endif %}
+        </p>
+        <div class="chip-row">
+          <span class="chip">Telefon: {{ profile.phone|default:"—" }}</span>
+          <span class="chip">Publike: {% if profile.profilePublic %}Po{% else %}Jo{% endif %}</span>
+          <a class="chip link" href="/profiles/{{ profile.id }}/">Shiko si publik</a>
+        </div>
+        {% if profile.badges %}
+        <div class="badge-row">
+          {% for b in profile.badges %}
+            <span class="badge-chip">{{ b }}</span>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+      <div class="profile-stats">
+        <div class="stat-tile">
+          <p class="stat-label">Pikë</p>
+          <p class="stat-value">{{ profile.rewardPoints|default:0 }}</p>
+          <p class="stat-hint">Shtohet nga kontributet</p>
+        </div>
+        <div class="stat-tile">
+          <p class="stat-label">Vlerësimi</p>
+          <p class="stat-value">{{ profile.averageRating|default:"0"|floatformat:1 }}/5</p>
+          <p class="stat-hint">{{ profile.reviewCount|default:0 }} vlerësime</p>
+        </div>
+        <div class="stat-tile">
+          <p class="stat-label">Thirrje të përfunduara</p>
+          <p class="stat-value">{{ profile.completedRequests|default:0 }}</p>
+          <p class="stat-hint">Historiku i përfundimeve</p>
+        </div>
+      </div>
+    </div>
+  </section>
 
-{% if profile %}
-<div class="card">
-  <h3>Paraqitja</h3>
-  <p><strong>Emri:</strong> {{ profile.firstName }} {{ profile.lastName }}</p>
-  <p><strong>Bio:</strong> {{ profile.bio }}</p>
-  <p><strong>Vendndodhja:</strong> {{ profile.location }}</p>
-  <p><strong>Aftësitë:</strong> {{ profile.skills }}</p>
-  <p><strong>Disponueshmëria:</strong> {% if profile.availability %}Po{% else %}Jo{% endif %}</p>
-  <p><strong>Publike:</strong> {% if profile.profilePublic %}Po{% else %}Jo{% endif %}</p>
-  <p><strong>Pikë:</strong> {{ profile.rewardPoints|default:0 }}</p>
-  <p><strong>Thirrje të përfunduara:</strong> {{ profile.completedRequests|default:0 }}</p>
-  <p><strong>Vlerësimi:</strong> {{ profile.averageRating|default:"0"|floatformat:1 }}/5 ({{ profile.reviewCount|default:0 }} vlerësime)</p>
-  {% if profile.avatarUrl %}
-  <p><img src="{{ profile.avatarUrl }}" alt="Avatar" style="width:120px; border-radius:12px;"></p>
-  {% endif %}
+  <section class="profile-content">
+    <div class="card profile-form">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Përditëso profilin</p>
+          <h2>Më shumë besueshmëri me foto dhe bio të qartë</h2>
+          <p class="muted">Mbaj tonin në shqip, shto aftësitë dhe një bio të shkurtër. Avatarët duken më mirë në raport 1:1.</p>
+        </div>
+      </div>
+      <form method="post" enctype="multipart/form-data" class="form-grid">
+        {% csrf_token %}
+        <div class="field span-2">
+          <label for="{{ form.bio.id_for_label }}">Bio</label>
+          {{ form.bio }}
+        </div>
+        <div class="field">
+          <label for="{{ form.location.id_for_label }}">Vendndodhja</label>
+          {{ form.location }}
+        </div>
+        <div class="field">
+          <label for="{{ form.phone.id_for_label }}">Telefon</label>
+          {{ form.phone }}
+        </div>
+        <div class="field span-2">
+          <label for="{{ form.skills.id_for_label }}">Aftësitë & fushat</label>
+          {{ form.skills }}
+          <p class="hint">Përdor presje për t'i ndarë (p.sh. koordinim, logjistikë, mjeksi)</p>
+        </div>
+        <div class="field">
+          <label for="{{ form.avatarUrl.id_for_label }}">Link i fotos (opsional)</label>
+          {{ form.avatarUrl }}
+          <p class="hint">Nëse s'ke link, ngarko skedarin më poshtë.</p>
+        </div>
+        <div class="field">
+          <label>Ngarko avatar</label>
+          <input type="file" name="avatar_file" accept="image/*">
+          <p class="hint">Formatet .jpg/.png, deri në 2MB.</p>
+        </div>
+        <div class="field">
+          <label for="{{ form.availability.id_for_label }}">Disponueshmëri</label>
+          <div class="checkbox-row">
+            {{ form.availability }} <span>Jam gati të pranoj thirrje</span>
+          </div>
+        </div>
+        <div class="field">
+          <label for="{{ form.profilePublic.id_for_label }}">Profili publik</label>
+          <div class="checkbox-row">
+            {{ form.profilePublic }} <span>Shfaq profilin tim për të tjerët</span>
+          </div>
+        </div>
+        <div class="actions span-2">
+          <button type="submit">Ruaj ndryshimet</button>
+          <p class="hint">Ndryshimet reflektohen menjëherë.</p>
+        </div>
+      </form>
+    </div>
+
+    {% if profile %}
+    <div class="card profile-preview">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Paraqitje e shpejtë</p>
+          <h3>Si të tjerët e shohin profilin tënd publik</h3>
+        </div>
+        <a class="pill link" href="/profiles/{{ profile.id }}/">Hap faqen publike</a>
+      </div>
+      <div class="preview-grid">
+        <div>
+          <p class="muted label">Bio</p>
+          <p class="lead">{{ profile.bio|default:"Shto diçka për veten, eksperiencë dhe motivim." }}</p>
+          <div class="chip-row">
+            <span class="chip">Vendndodhja: {{ profile.location|default:"—" }}</span>
+            <span class="chip">Telefon: {{ profile.phone|default:"—" }}</span>
+            <span class="chip">Disponueshmëri: {% if profile.availability %}Po{% else %}Jo{% endif %}</span>
+          </div>
+        </div>
+        <div>
+          <p class="muted label">Aftësi</p>
+          <div class="pill-cloud">
+            {% if skills_list %}
+              {% for skill in skills_list %}
+                <span class="pill">{{ skill }}</span>
+              {% endfor %}
+            {% else %}
+              <span class="pill pill-ghost">Shto aftësitë që t'u besojnë më shpejt</span>
+            {% endif %}
+          </div>
+          <p class="muted label" style="margin-top:12px;">Distinktivë</p>
+          <div class="badge-row">
+            {% if profile.badges %}
+              {% for b in profile.badges %}
+                <span class="badge-chip">{{ b }}</span>
+              {% endfor %}
+            {% else %}
+              <span class="pill pill-ghost">Distinktivët shfaqen automatikisht nga kontributet</span>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  </section>
 </div>
-{% endif %}
 {% endblock %}

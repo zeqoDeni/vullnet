@@ -22,4 +22,5 @@ public class UserProfileResponse {
     private Integer completedRequests;
     private Double averageRating;
     private Integer reviewCount;
+    private java.util.List<String> badges;
 }
