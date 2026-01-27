@@ -377,7 +377,7 @@ BLOG_POSTS = [
 def blog_list(request):
     response = api.get_blogs(params={"page": 0, "size": 20})
     posts = []
-    if response.status_code == 200:
+    if response is not None and response.status_code == 200:
         posts = response.json().get("content", [])
         for p in posts:
             p["coverImageUrl"] = _full_media_url(p.get("coverImageUrl"), request)
@@ -390,7 +390,7 @@ def blog_list(request):
 
 def blog_detail(request, post_id):
     response = api.get_blog(post_id)
-    if response.status_code == 200:
+    if response is not None and response.status_code == 200:
         post = response.json()
         post["coverImageUrl"] = _full_media_url(post.get("coverImageUrl"), request)
         if post.get("gallery"):

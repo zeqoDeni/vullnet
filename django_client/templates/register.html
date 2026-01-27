@@ -4,7 +4,34 @@
   <h1>Regjistrohu</h1>
   <form method="post">
     {% csrf_token %}
-    {{ form.as_p }}
+    {% if form.non_field_errors %}
+      <div class="error">{{ form.non_field_errors }}</div>
+    {% endif %}
+    <p>
+      {{ form.firstName.label_tag }}<br>
+      {{ form.firstName }}
+      {{ form.firstName.errors }}
+    </p>
+    <p>
+      {{ form.lastName.label_tag }}<br>
+      {{ form.lastName }}
+      {{ form.lastName.errors }}
+    </p>
+    <p>
+      {{ form.email.label_tag }}<br>
+      {{ form.email }}
+      {{ form.email.errors }}
+    </p>
+    <p>
+      {{ form.phone.label_tag }}<br>
+      {{ form.phone }}
+      {{ form.phone.errors }}
+    </p>
+    <p>
+      {{ form.password.label_tag }}<br>
+      {{ form.password }}
+      {{ form.password.errors }}
+    </p>
     <button type="submit">Regjistrohu</button>
   </form>
   <p class="muted">Ke një llogari? <a href="/login/">Hyr</a></p>
