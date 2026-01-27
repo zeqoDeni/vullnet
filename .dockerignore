@@ -1,0 +1,14 @@
+target
+dbdata
+uploads
+.env
+.git
+.idea
+*.iml
+*.log
+**/__pycache__
+django_client/.venv
+django_client/db.sqlite3
+django_client/staticfiles
+*.pyc
+*.pyo

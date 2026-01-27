@@ -1,0 +1,27 @@
+services:
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: RootPass123
+      MYSQL_DATABASE: vullnet_db
+      MYSQL_USER: vullnet_user
+      MYSQL_PASSWORD: Vullnet#2026!Pass
+    volumes:
+      - ./dbdata:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    restart: unless-stopped
+
+  backend:
+    build: .
+    depends_on:
+      - db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/vullnet_db
+      SPRING_DATASOURCE_USERNAME: vullnet_user
+      SPRING_DATASOURCE_PASSWORD: Vullnet#2026!Pass
+      APP_JWT_SECRET: change-this
+      SPRING_PROFILES_ACTIVE: dev
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
