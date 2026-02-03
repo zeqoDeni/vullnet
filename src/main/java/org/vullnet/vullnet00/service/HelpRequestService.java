@@ -10,7 +10,10 @@ import org.vullnet.vullnet00.model.HelpRequest;
 import org.vullnet.vullnet00.model.NotificationType;
 import org.vullnet.vullnet00.model.RequestStatus;
 import org.vullnet.vullnet00.model.User;
+import org.vullnet.vullnet00.repo.ApplicationRepo;
 import org.vullnet.vullnet00.repo.HelpRequestRepo;
+import org.vullnet.vullnet00.repo.RequestMessageRepo;
+import org.vullnet.vullnet00.repo.ReviewRepo;
 import org.vullnet.vullnet00.repo.UserRepo;
 
 import org.springframework.data.domain.Page;
@@ -23,6 +26,9 @@ public class HelpRequestService {
 
     private final HelpRequestRepo helpRequestRepo;
     private final UserRepo userRepo;
+    private final ApplicationRepo applicationRepo;
+    private final RequestMessageRepo requestMessageRepo;
+    private final ReviewRepo reviewRepo;
     private final org.springframework.core.env.Environment environment;
     private final RewardService rewardService;
     private final NotificationService notificationService;
@@ -174,5 +180,15 @@ public class HelpRequestService {
         HelpRequest request = helpRequestRepo.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Thirrja nuk u gjend"));
         return toResponse(request, viewerId);
+    }
+
+    @org.springframework.transaction.annotation.Transactional
+    public void deleteAsAdmin(Long requestId) {
+        HelpRequest request = helpRequestRepo.findById(requestId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Thirrja nuk u gjend"));
+        applicationRepo.deleteByHelpRequestId(requestId);
+        requestMessageRepo.deleteByHelpRequestId(requestId);
+        reviewRepo.deleteByHelpRequestId(requestId);
+        helpRequestRepo.delete(request);
     }
 }
