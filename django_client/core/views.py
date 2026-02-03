@@ -386,6 +386,8 @@ def admin_dashboard(request):
     users_data = _safe_json(users_response, []) if users_response.status_code == 200 else []
     stats_response = api.get_admin_stats(token)
     stats_data = _safe_json(stats_response, {}) if stats_response.status_code == 200 else {}
+    requests_response = api.get_requests(token, params={"page": 0, "size": 20})
+    requests_data = _safe_json(requests_response, {"content": []}) if requests_response.status_code == 200 else {"content": []}
     blogs_response = api.get_admin_blogs(token, params={"page": 0, "size": 20})
     blogs_data = _safe_json(blogs_response, {"content": []}) if blogs_response.status_code == 200 else {"content": []}
     blog_form = BlogForm()
@@ -394,7 +396,19 @@ def admin_dashboard(request):
         p["coverImageUrl"] = _full_media_url(p.get("coverImageUrl"), request)
         if p.get("gallery"):
             p["gallery"] = [_full_media_url(g, request) for g in p.get("gallery", [])]
-    return render(request, "admin.html", {"users": users_data, "stats": stats_data, "blogs": blogs_list, "blog_form": blog_form, "token": token, "api_base": settings.API_BASE_URL})
+    return render(
+        request,
+        "admin.html",
+        {
+            "users": users_data,
+            "stats": stats_data,
+            "requests": requests_data.get("content", []),
+            "blogs": blogs_list,
+            "blog_form": blog_form,
+            "token": token,
+            "api_base": settings.API_BASE_URL,
+        },
+    )
 
 
 @require_http_methods(["POST"])
@@ -489,6 +503,21 @@ def update_status(request, user_id):
         messages.success(request, "Status updated")
     else:
         messages.error(request, _safe_message(response, "Përditësimi dështoi"))
+    return redirect("admin_dashboard")
+
+@require_http_methods(["POST"])
+def admin_delete_request(request, request_id):
+    token = _get_token(request)
+    if not token:
+        return redirect("login")
+    if not _is_admin(request):
+        messages.error(request, "Kërkohet akses admin")
+        return redirect("dashboard")
+    resp = api.delete_request(token, request_id)
+    if resp.status_code in (200, 204):
+        messages.success(request, "Thirrja u fshi")
+    else:
+        messages.error(request, _safe_message(resp, "Fshirja dështoi"))
     return redirect("admin_dashboard")
 
 

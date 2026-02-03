@@ -50,6 +50,44 @@
   </table>
 </div>
 
+<div class="card">
+  <h3>Thirrjet (admin)</h3>
+  <p class="muted">Fshije një thirrje nëse është e papërshtatshme ose e rreme.</p>
+  <table>
+    <tr>
+      <th>ID</th>
+      <th>Titulli</th>
+      <th>Pronari</th>
+      <th>Statusi</th>
+      <th>Veprime</th>
+    </tr>
+    {% for r in requests %}
+    <tr>
+      <td>#{{ r.id }}</td>
+      <td><a href="/requests/{{ r.id }}/">{{ r.title }}</a></td>
+      <td>
+        {% if r.ownerId %}
+          <a href="/profiles/{{ r.ownerId }}/">{{ r.ownerName|default:"Përdorues" }}</a>
+        {% else %}
+          —
+        {% endif %}
+      </td>
+      <td><span class="pill">{{ r.status }}</span></td>
+      <td>
+        <form method="post" action="/admin-dashboard/requests/{{ r.id }}/delete/" style="display:inline;">
+          {% csrf_token %}
+          <button type="submit" class="danger" onclick="return confirm('Je i sigurt që do ta fshish këtë thirrje?');">Fshi</button>
+        </form>
+      </td>
+    </tr>
+    {% empty %}
+    <tr>
+      <td colspan="5" class="muted">Nuk ka thirrje për momentin.</td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+
 <div id="blog-admin" data-token="{{ token }}" data-api="{{ api_base }}">
   <div class="card admin-two-col">
     <div>

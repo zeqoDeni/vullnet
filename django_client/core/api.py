@@ -160,6 +160,12 @@ def cancel_request(token, request_id):
         headers=_headers(token),
     )
 
+def delete_request(token, request_id):
+    return requests.delete(
+        f"{settings.API_BASE_URL}/api/requests/{request_id}",
+        headers=_headers(token),
+    )
+
 
 def create_review(token, request_id, data):
     return requests.post(
