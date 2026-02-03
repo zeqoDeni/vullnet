@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+  <div class="pill">Opinionet</div>
+  <h1>Na trego si po shkojmë</h1>
+  <p class="muted">Sugjerimet e tua na bëjnë më të mirë. Jep një ide, një kritikë, ose një “wow”.</p>
+
+  <div class="card" style="margin-top:1.5rem;">
+    <form>
+      <div class="form-field">
+        <label>Subjekti</label>
+        <input type="text" placeholder="P.sh. Dashboard-i, thirrjet, njoftimet">
+      </div>
+      <div class="form-field">
+        <label>Mesazhi</label>
+        <textarea rows="5" placeholder="Trego çfarë duhet përmirësuar dhe pse."></textarea>
+      </div>
+      <button type="button">Dërgo opinionin</button>
+    </form>
+    <p class="muted" style="margin-top:0.75rem;">Ne e lexojmë çdo mesazh. Po, çdo.</p>
+  </div>
+</div>
+{% endblock %}

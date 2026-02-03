@@ -8,6 +8,7 @@ import org.vullnet.vullnet00.model.*;
 import org.vullnet.vullnet00.repo.ApplicationRepo;
 import org.vullnet.vullnet00.repo.BlogPostRepo;
 import org.vullnet.vullnet00.repo.HelpRequestRepo;
+import org.vullnet.vullnet00.repo.NotificationRepo;
 import org.vullnet.vullnet00.repo.UserRepo;
 
 @Component
@@ -18,12 +19,14 @@ public class DevDataSeeder implements CommandLineRunner {
     private final HelpRequestRepo helpRequestRepo;
     private final ApplicationRepo applicationRepo;
     private final BlogPostRepo blogPostRepo;
+    private final NotificationRepo notificationRepo;
 
-    public DevDataSeeder(UserRepo userRepo, HelpRequestRepo helpRequestRepo, ApplicationRepo applicationRepo, BlogPostRepo blogPostRepo) {
+    public DevDataSeeder(UserRepo userRepo, HelpRequestRepo helpRequestRepo, ApplicationRepo applicationRepo, BlogPostRepo blogPostRepo, NotificationRepo notificationRepo) {
         this.userRepo = userRepo;
         this.helpRequestRepo = helpRequestRepo;
         this.applicationRepo = applicationRepo;
         this.blogPostRepo = blogPostRepo;
+        this.notificationRepo = notificationRepo;
     }
 
     @Override
@@ -73,6 +76,14 @@ public class DevDataSeeder implements CommandLineRunner {
                     .applicant(volunteer)
                     .message("Mund të vij pasdite.")
                     .status(ApplicationStatus.PENDING)
+                    .build());
+
+            notificationRepo.save(Notification.builder()
+                    .recipient(owner)
+                    .type(NotificationType.SYSTEM)
+                    .title("Mirë se erdhe në Vullnet")
+                    .body("Ky është një njoftim shembull për të testuar panelin.")
+                    .link("/dashboard/")
                     .build());
         }
 

@@ -15,6 +15,15 @@ def _safe_message(response, default_msg):
         return default_msg
 
 
+def _safe_json(response, default=None):
+    if response is None:
+        return {} if default is None else default
+    try:
+        return response.json()
+    except Exception:
+        return {} if default is None else default
+
+
 def _full_media_url(url, request=None):
     if not url:
         return url
@@ -43,10 +52,12 @@ def _is_admin(request):
 
 def home(request):
     blogs_response = api.get_blogs(params={"page": 0, "size": 3})
+    stats_resp = api.get_public_stats()
+    stats = _safe_json(stats_resp, {}) if stats_resp is not None and stats_resp.status_code == 200 else {}
     posts = []
     if blogs_response is not None and blogs_response.status_code == 200:
         try:
-            payload = blogs_response.json()
+            payload = _safe_json(blogs_response, {})
             posts = payload.get("content", [])
             for p in posts:
                 p["coverImageUrl"] = _full_media_url(p.get("coverImageUrl"), request)
@@ -54,7 +65,31 @@ def home(request):
                     p["gallery"] = [_full_media_url(g, request) for g in p.get("gallery", [])]
         except Exception:
             posts = []
-    return render(request, "landing.html", {"posts": posts})
+    return render(request, "landing.html", {"posts": posts, "stats": stats})
+
+
+def contact(request):
+    return render(request, "contact.html")
+
+
+def help_page(request):
+    return render(request, "help.html")
+
+
+def faq(request):
+    return render(request, "faq.html")
+
+
+def feedback(request):
+    return render(request, "feedback.html")
+
+
+def privacy(request):
+    return render(request, "privacy.html")
+
+
+def terms(request):
+    return render(request, "terms.html")
 
 
 @require_http_methods(["GET", "POST"])
@@ -63,11 +98,11 @@ def login_view(request):
     if request.method == "POST" and form.is_valid():
         response = api.login(form.cleaned_data)
         if response.status_code == 200:
-            payload = response.json()
+            payload = _safe_json(response, {})
             request.session["token"] = payload.get("token")
             request.session["user"] = payload.get("user")
             return redirect("dashboard")
-        messages.error(request, response.json().get("message", "Hyrja dështoi"))
+        messages.error(request, _safe_message(response, "Hyrja dështoi"))
     return render(request, "login.html", {"form": form})
 
 
@@ -77,11 +112,11 @@ def register_view(request):
     if request.method == "POST" and form.is_valid():
         response = api.register(form.cleaned_data)
         if response.status_code in (200, 201):
-            payload = response.json()
+            payload = _safe_json(response, {})
             request.session["token"] = payload.get("token")
             request.session["user"] = payload.get("user")
             return redirect("dashboard")
-        messages.error(request, response.json().get("message", "Regjistrimi dështoi"))
+        messages.error(request, _safe_message(response, "Regjistrimi dështoi"))
     return render(request, "register.html", {"form": form})
 
 
@@ -102,13 +137,13 @@ def dashboard(request):
 
     rewards_resp = api.get_rewards(token)
     if rewards_resp.status_code == 200:
-        rewards = rewards_resp.json()
+        rewards = _safe_json(rewards_resp, {})
     lb_resp = api.get_leaderboard(params={"page": 0, "size": 5})
     if lb_resp.status_code == 200:
-        leaderboard = lb_resp.json().get("content", [])
+        leaderboard = _safe_json(lb_resp, {}).get("content", [])
     apps_resp = api.my_applications(token, params={"page": 0, "size": 6})
     if apps_resp.status_code == 200:
-        for a in apps_resp.json().get("content", []):
+        for a in _safe_json(apps_resp, {}).get("content", []):
             notifications.append(
                 {
                     "type": "Aplikim",
@@ -119,7 +154,7 @@ def dashboard(request):
             )
     req_resp = api.get_requests(token, params={"page": 0, "size": 6})
     if req_resp.status_code == 200 and user_id:
-        for r in req_resp.json().get("content", []):
+        for r in _safe_json(req_resp, {}).get("content", []):
             if r.get("ownerId") != user_id:
                 continue
             notifications.append(
@@ -142,6 +177,17 @@ def dashboard(request):
     )
 
 
+@require_http_methods(["GET"])
+def notifications_view(request):
+    token = _get_token(request)
+    if not token:
+        return redirect("login")
+    page = request.GET.get("page", 0)
+    resp = api.get_notifications(token, params={"page": page, "size": 50})
+    data = _safe_json(resp, {"content": []}) if resp.status_code == 200 else {"content": []}
+    return render(request, "notifications.html", {"notifications": data.get("content", [])})
+
+
 @require_http_methods(["GET", "POST"])
 def profile(request):
     token = _get_token(request)
@@ -157,7 +203,7 @@ def profile(request):
         if request.FILES.get("avatar_file"):
             upload = api.upload_avatar(token, request.FILES["avatar_file"])
             if upload.status_code in (200, 201):
-                avatar_url = upload.json().get("url")
+                avatar_url = _safe_json(upload, {}).get("url")
                 form.cleaned_data["avatarUrl"] = avatar_url
             else:
                 messages.error(request, "Ngarkimi i fotos dështoi")
@@ -165,9 +211,11 @@ def profile(request):
         if response.status_code == 200:
             messages.success(request, "Profili u përditësua")
         else:
-            messages.error(request, response.json().get("message", "Përditësimi dështoi"))
+            messages.error(request, _safe_message(response, "Përditësimi dështoi"))
     response = api.get_profile(token, user_id)
-    profile_data = response.json() if response.status_code == 200 else {}
+    profile_data = _safe_json(response, {}) if response.status_code == 200 else {}
+    if profile_data.get("avatarUrl"):
+        profile_data["avatarUrl"] = _full_media_url(profile_data.get("avatarUrl"), request)
     form_initial = {
         "bio": profile_data.get("bio") or "",
         "avatarUrl": profile_data.get("avatarUrl") or "",
@@ -194,28 +242,46 @@ def requests_list(request):
         if response.status_code in (200, 201):
             messages.success(request, "Thirrja u krijua")
             return redirect("requests")
-        messages.error(request, response.json().get("message", "Krijimi dështoi"))
+        messages.error(request, _safe_message(response, "Krijimi dështoi"))
 
     q = request.GET.get("q")
+    tab = request.GET.get("tab", "all")
     params = {"page": 0, "size": 20}
     if q:
         params["q"] = q
-    response = api.get_requests(token, params=params)
-    data = response.json() if response.status_code == 200 else {"content": []}
-    return render(request, "requests.html", {"requests": data.get("content", []), "form": form, "q": q})
-
-
-def open_requests(request):
-    token = _get_token(request)
-    if not token:
-        return redirect("login")
-    q = request.GET.get("q")
-    params = {"page": 0, "size": 20}
+    counts_params = {"page": 0, "size": 1}
     if q:
-        params["q"] = q
-    response = api.get_open_requests(token, params=params)
-    data = response.json() if response.status_code == 200 else {"content": []}
-    return render(request, "open_requests.html", {"requests": data.get("content", []), "q": q})
+        counts_params["q"] = q
+    all_resp = api.get_requests(token, params=counts_params)
+    open_resp = api.get_open_requests(token, params=counts_params)
+    all_count = _safe_json(all_resp, {}).get("totalElements", 0) if all_resp.status_code == 200 else 0
+    open_count = _safe_json(open_resp, {}).get("totalElements", 0) if open_resp.status_code == 200 else 0
+    if tab == "open":
+        response = api.get_open_requests(token, params=params)
+    else:
+        response = api.get_requests(token, params=params)
+    data = _safe_json(response, {"content": []}) if response.status_code == 200 else {"content": []}
+    requests_list = data.get("content", [])
+    if tab == "mine":
+        user_id = (request.session.get("user") or {}).get("id")
+        if user_id:
+            requests_list = [r for r in requests_list if r.get("ownerId") == user_id]
+        else:
+            requests_list = []
+    mine_count = len(requests_list) if tab == "mine" else None
+    return render(
+        request,
+        "requests.html",
+        {
+            "requests": requests_list,
+            "form": form,
+            "q": q,
+            "tab": tab,
+            "all_count": all_count,
+            "open_count": open_count,
+            "mine_count": mine_count,
+        },
+    )
 
 
 @require_http_methods(["GET", "POST"])
@@ -230,9 +296,9 @@ def request_detail(request, request_id):
     request_data = {}
     req_resp = api.get_request(token, request_id)
     if req_resp.status_code == 200:
-        request_data = req_resp.json()
+        request_data = _safe_json(req_resp, {})
     else:
-        messages.error(request, req_resp.json().get("message", "Thirrja nuk u gjet"))
+        messages.error(request, _safe_message(req_resp, "Thirrja nuk u gjet"))
         return redirect("requests")
 
     apply_form = ApplicationForm(request.POST or None)
@@ -260,13 +326,13 @@ def request_detail(request, request_id):
             if response.status_code in (200, 201):
                 messages.success(request, "Vlerësimi u regjistrua")
                 return redirect("request_detail", request_id=request_id)
-            messages.error(request, response.json().get("message", "Dështoi dërgimi i vlerësimit"))
+            messages.error(request, _safe_message(response, "Dështoi dërgimi i vlerësimit"))
         elif form_type == "apply" and apply_form.is_valid():
             response = api.apply_to_request(token, request_id, apply_form.cleaned_data)
             if response.status_code in (200, 201):
                 messages.success(request, "Aplikimi u dërgua")
                 return redirect("request_detail", request_id=request_id)
-            messages.error(request, response.json().get("message", "Aplikimi dështoi"))
+            messages.error(request, _safe_message(response, "Aplikimi dështoi"))
         elif form_type == "chat" and can_chat:
             body = request.POST.get("chat_body", "")
             if body.strip():
@@ -276,12 +342,12 @@ def request_detail(request, request_id):
                     return redirect("request_detail", request_id=request_id)
                 else:
                     try:
-                        messages.error(request, resp.json().get("message", "Mesazhi dështoi"))
+                        messages.error(request, _safe_message(resp, "Mesazhi dështoi"))
                     except Exception:
                         messages.error(request, "Mesazhi dështoi")
 
     apps_response = api.get_request_applications(token, request_id, params={"page": 0, "size": 20})
-    apps_data = apps_response.json() if apps_response.status_code == 200 else {"content": []}
+    apps_data = _safe_json(apps_response, {"content": []}) if apps_response.status_code == 200 else {"content": []}
     applications = apps_data.get("content", [])
     for item in applications:
         if "id" not in item:
@@ -291,12 +357,12 @@ def request_detail(request, request_id):
     if accepted_volunteer_id:
         reviews_resp = api.get_reviews(token, accepted_volunteer_id, params={"page": 0, "size": 3})
         if reviews_resp.status_code == 200:
-            volunteer_reviews = reviews_resp.json().get("content", [])
+            volunteer_reviews = _safe_json(reviews_resp, {}).get("content", [])
 
     if can_chat:
         msgs_resp = api.get_request_messages(token, request_id, params={"page": 0, "size": 50})
         if msgs_resp and msgs_resp.status_code == 200:
-            messages_list = msgs_resp.json().get("content", [])
+            messages_list = _safe_json(msgs_resp, {}).get("content", [])
 
     return render(
         request,
@@ -320,7 +386,7 @@ def my_applications(request):
     if not token:
         return redirect("login")
     response = api.my_applications(token, params={"page": 0, "size": 20})
-    data = response.json() if response.status_code == 200 else {"content": []}
+    data = _safe_json(response, {"content": []}) if response.status_code == 200 else {"content": []}
     applications = data.get("content", [])
     for item in applications:
         if "id" not in item:
@@ -336,11 +402,11 @@ def admin_dashboard(request):
         messages.error(request, "Kërkohet akses admin")
         return redirect("dashboard")
     users_response = api.get_users(token)
-    users_data = users_response.json() if users_response.status_code == 200 else []
+    users_data = _safe_json(users_response, []) if users_response.status_code == 200 else []
     stats_response = api.get_admin_stats(token)
-    stats_data = stats_response.json() if stats_response.status_code == 200 else {}
+    stats_data = _safe_json(stats_response, {}) if stats_response.status_code == 200 else {}
     blogs_response = api.get_admin_blogs(token, params={"page": 0, "size": 20})
-    blogs_data = blogs_response.json() if blogs_response.status_code == 200 else {"content": []}
+    blogs_data = _safe_json(blogs_response, {"content": []}) if blogs_response.status_code == 200 else {"content": []}
     blog_form = BlogForm()
     blogs_list = blogs_data.get("content", [])
     for p in blogs_list:
@@ -363,7 +429,7 @@ def update_role(request, user_id):
     if response.status_code == 200:
         messages.success(request, "Role updated")
     else:
-        messages.error(request, response.json().get("message", "Përditësimi dështoi"))
+        messages.error(request, _safe_message(response, "Përditësimi dështoi"))
     return redirect("admin_dashboard")
 
 # Blog mock data (static)
@@ -378,7 +444,7 @@ def blog_list(request):
     response = api.get_blogs(params={"page": 0, "size": 20})
     posts = []
     if response is not None and response.status_code == 200:
-        posts = response.json().get("content", [])
+        posts = _safe_json(response, {}).get("content", [])
         for p in posts:
             p["coverImageUrl"] = _full_media_url(p.get("coverImageUrl"), request)
             if p.get("gallery"):
@@ -391,7 +457,7 @@ def blog_list(request):
 def blog_detail(request, post_id):
     response = api.get_blog(post_id)
     if response is not None and response.status_code == 200:
-        post = response.json()
+        post = _safe_json(response, {})
         post["coverImageUrl"] = _full_media_url(post.get("coverImageUrl"), request)
         if post.get("gallery"):
             post["gallery"] = [_full_media_url(g, request) for g in post.get("gallery", [])]
@@ -416,11 +482,16 @@ def profile_public(request, user_id):
     token = _get_token(request)
     response = api.get_profile(token, user_id)
     if response.status_code == 200:
-        profile_data = response.json()
+        profile_data = _safe_json(response, {})
+        if profile_data.get("avatarUrl"):
+            profile_data["avatarUrl"] = _full_media_url(profile_data.get("avatarUrl"), request)
         skills_list = [s.strip() for s in (profile_data.get("skills") or "").split(",") if s.strip()]
         return render(request, "profile_public.html", {"profile": profile_data, "skills_list": skills_list})
-    messages.error(request, response.json().get("message", "Nuk lejohet ose profili privat"))
-    return redirect("open_requests")
+    if response.status_code == 403:
+        messages.error(request, "Profili është privat.")
+    else:
+        messages.error(request, _safe_message(response, "Profili nuk u gjet."))
+    return redirect("/requests/?tab=open#messages")
 
 
 @require_http_methods(["POST"])
@@ -436,7 +507,7 @@ def update_status(request, user_id):
     if response.status_code == 200:
         messages.success(request, "Status updated")
     else:
-        messages.error(request, response.json().get("message", "Përditësimi dështoi"))
+        messages.error(request, _safe_message(response, "Përditësimi dështoi"))
     return redirect("admin_dashboard")
 
 
@@ -449,7 +520,7 @@ def accept_application(request, application_id):
     if response.status_code == 200:
         messages.success(request, "Aplikimi u pranua")
     else:
-        messages.error(request, response.json().get("message", "Pranimi dështoi"))
+        messages.error(request, _safe_message(response, "Pranimi dështoi"))
     return redirect(request.META.get("HTTP_REFERER", "requests"))
 
 
@@ -462,7 +533,7 @@ def reject_application(request, application_id):
     if response.status_code == 200:
         messages.success(request, "Aplikimi u refuzua")
     else:
-        messages.error(request, response.json().get("message", "Refuzimi dështoi"))
+        messages.error(request, _safe_message(response, "Refuzimi dështoi"))
     return redirect(request.META.get("HTTP_REFERER", "requests"))
 
 
@@ -475,7 +546,7 @@ def withdraw_application(request, application_id):
     if response.status_code == 200:
         messages.success(request, "Aplikimi u tërhoq")
     else:
-        messages.error(request, response.json().get("message", "Tërheqja dështoi"))
+        messages.error(request, _safe_message(response, "Tërheqja dështoi"))
     return redirect(request.META.get("HTTP_REFERER", "my_applications"))
 
 
@@ -488,7 +559,7 @@ def complete_request(request, request_id):
     if response.status_code == 200:
         messages.success(request, "Thirrja u përfundua")
     else:
-        messages.error(request, response.json().get("message", "Përfundimi dështoi"))
+        messages.error(request, _safe_message(response, "Përfundimi dështoi"))
     return redirect(request.META.get("HTTP_REFERER", "requests"))
 
 
@@ -501,7 +572,7 @@ def cancel_request(request, request_id):
     if response.status_code == 200:
         messages.success(request, "Thirrja u anulua")
     else:
-        messages.error(request, response.json().get("message", "Anulimi dështoi"))
+        messages.error(request, _safe_message(response, "Anulimi dështoi"))
     return redirect(request.META.get("HTTP_REFERER", "requests"))
 
 

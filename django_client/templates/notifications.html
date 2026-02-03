@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+  <div class="section-head">
+    <div>
+      <p class="eyebrow">Njoftimet</p>
+      <h2>Të gjitha njoftimet</h2>
+      <p class="muted">Këtu shfaqen të gjitha veprimet e fundit.</p>
+    </div>
+  </div>
+
+  <div class="notification-list">
+    {% for n in notifications %}
+      <div class="notification-row">
+        <div>
+          <p class="muted" style="margin:0;">{{ n.type|default:"Njoftim" }}</p>
+          <strong>
+            {% if n.link %}
+              <a href="{{ n.link }}">{{ n.title }}</a>
+            {% else %}
+              {{ n.title }}
+            {% endif %}
+          </strong>
+          {% if n.body %}
+            <p class="muted" style="margin:0.35rem 0 0;">{{ n.body }}</p>
+          {% endif %}
+        </div>
+        {% if n.link %}
+          <a class="pill" href="{{ n.link }}">Shko</a>
+        {% endif %}
+      </div>
+    {% empty %}
+      <p class="muted">Nuk ka njoftime ende.</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

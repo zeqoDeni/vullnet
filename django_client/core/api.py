@@ -220,6 +220,32 @@ def get_admin_blogs(token, params=None):
     )
 
 
+def get_notifications(token, params=None):
+    return requests.get(
+        f"{settings.API_BASE_URL}/api/notifications",
+        headers=_headers(token),
+        params=params,
+    )
+
+
+def mark_notification_read(token, notification_id):
+    return requests.patch(
+        f"{settings.API_BASE_URL}/api/notifications/{notification_id}/read",
+        headers=_headers(token),
+    )
+
+
+def get_unread_notification_count(token):
+    return requests.get(
+        f"{settings.API_BASE_URL}/api/notifications/unread-count",
+        headers=_headers(token),
+    )
+
+
+def get_public_stats():
+    return requests.get(f"{settings.API_BASE_URL}/api/public/stats")
+
+
 def create_blog(token, data):
     return requests.post(
         f"{settings.API_BASE_URL}/api/admin/blogs",

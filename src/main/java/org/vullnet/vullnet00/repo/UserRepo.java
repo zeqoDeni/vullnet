@@ -10,6 +10,7 @@ public interface UserRepo extends JpaRepository<User, Long> {
      boolean existsByEmail(String email);
      boolean existsByRole(org.vullnet.vullnet00.model.Role role);
      org.springframework.data.domain.Page<User> findAllByOrderByRewardPointsDesc(org.springframework.data.domain.Pageable pageable);
+     long countByRoleAndActiveTrue(org.vullnet.vullnet00.model.Role role);
 
 
 }

@@ -1,86 +1,206 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="card">
-  <h1>Thirrjet</h1>
-  <form method="get" style="margin-bottom:12px;">
-    <input type="text" name="q" placeholder="Kërko për titull/vend/tekst" value="{{ q|default:'' }}">
+<div class="card request-search-card">
+  <div class="section-head">
+    <div>
+      <p class="eyebrow">Kërko thirrje</p>
+      <h2>Filtro thirrjet ekzistuese</h2>
+      <p class="muted">Gjej shpejt sipas titullit, vendit ose përshkrimit.</p>
+    </div>
+  </div>
+  <form method="get" class="request-search" action="#active-requests">
+    <input type="text" name="q" placeholder="Kërko sipas titullit, vendit ose tekstit" value="{{ q|default:'' }}">
+    <input type="hidden" name="tab" value="{{ tab|default:'all' }}">
     <button type="submit" class="pill">Filtro</button>
-  </form>
-  <h3>Krijo thirrje të re</h3>
-  <form method="post" enctype="multipart/form-data" id="request-create-form">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <input type="hidden" name="imageUrl" id="request-image-url">
-    <label>Foto e thirrjes (opsionale):</label>
-    <input type="file" id="request-image-file">
-    <button type="button" class="pill" id="upload-request-image">Ngarko foton</button>
-    <button type="submit">Krijo</button>
   </form>
 </div>
 
-<div class="card">
-  <h3>Të gjitha thirrjet</h3>
+<div class="request-tabs">
+  <a class="request-tab {% if tab == 'all' %}active{% endif %}" href="/requests/?tab=all{% if q %}&q={{ q }}{% endif %}#active-requests">
+    Të gjitha
+    <span class="tab-count">{{ all_count|default:0 }}</span>
+  </a>
+  <a class="request-tab {% if tab == 'open' %}active{% endif %}" href="/requests/?tab=open{% if q %}&q={{ q }}{% endif %}#active-requests">
+    Të hapura
+    <span class="tab-count">{{ open_count|default:0 }}</span>
+  </a>
+  <a class="request-tab {% if tab == 'mine' %}active{% endif %}" href="/requests/?tab=mine{% if q %}&q={{ q }}{% endif %}#active-requests">
+    Të miat
+    {% if mine_count is not None %}
+      <span class="tab-count">{{ mine_count }}</span>
+    {% endif %}
+  </a>
+</div>
+
+<div class="card request-create">
+  <div class="section-head">
+    <div>
+      <p class="eyebrow">Krijo thirrje</p>
+      <h1>Publiko një thirrje për ndihmë</h1>
+      <p class="muted">Shkruaj qartë çfarë të duhet dhe ku ndodhet kërkesa.</p>
+    </div>
+  </div>
+
+  <form method="post" enctype="multipart/form-data" id="request-create-form" class="request-form">
+    {% csrf_token %}
+    <div class="form-grid">
+      <div class="form-field">
+        <label for="id_title">Titulli</label>
+        {{ form.title }}
+      </div>
+      <div class="form-field">
+        <label for="id_location">Vendndodhja</label>
+        {{ form.location }}
+      </div>
+    </div>
+
+    <div class="form-field">
+      <label for="id_description">Përshkrimi</label>
+      {{ form.description }}
+      <p class="muted">Shto sa më shumë detaje, që vullnetarët ta kuptojnë menjëherë.</p>
+    </div>
+
+    <input type="hidden" name="imageUrl" id="request-image-url">
+    <div class="upload-card" id="request-upload-card">
+      <div class="upload-info">
+        <h4>Foto e thirrjes</h4>
+        <p class="muted">Opsionale. Një foto e qartë e bën situatën më të kuptueshme.</p>
+      </div>
+      <div class="upload-actions">
+        <input type="file" id="request-image-file" accept="image/*">
+        <button type="button" class="btn-secondary" id="upload-request-image">Ngarko foton</button>
+        <span class="upload-status muted" id="request-image-status">Asnjë foto e zgjedhur</span>
+      </div>
+      <div class="upload-preview" id="request-image-preview">
+        <span class="muted">Pamja paraprake shfaqet këtu</span>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn-primary">Krijo thirrjen</button>
+      <span class="muted">Do të shfaqet menjëherë për vullnetarët.</span>
+    </div>
+  </form>
+</div>
+
+<div class="card" id="active-requests">
+  <div class="section-head">
+    <div>
+      <p class="eyebrow">Thirrjet aktive</p>
+      <h3>📦 Të gjitha thirrjet</h3>
+      <p class="muted">Menaxho statusin, shiko aplikimet dhe ndiq progresin.</p>
+    </div>
+  </div>
+  {% if requests %}
   <div class="card-grid">
     {% for r in requests %}
     <div class="request-card">
       {% if r.imageUrl %}
         <img src="{{ r.imageUrl }}" alt="foto">
       {% else %}
-        <div style="width:88px; height:88px; border:1px dashed var(--border); border-radius:12px; display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:12px;">Pa foto</div>
+        <div class="request-image-fallback">📸</div>
       {% endif %}
       <div class="request-card-body">
-        <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
-          <div class="pill">#{{ r.id }}</div>
+        <div class="request-card-top">
+          <div class="request-id">#{{ r.id }}</div>
           <span class="status-pill" data-status="{{ r.status }}">{{ r.status }}</span>
         </div>
-        <h4 style="margin:4px 0 0 0;"><a href="/requests/{{ r.id }}/">{{ r.title }}</a></h4>
-        <p class="muted">{{ r.location }}</p>
-        <p class="muted">Pronar: <a href="/profiles/{{ r.ownerId }}/">{{ r.ownerName }}</a></p>
-        {% if r.acceptedVolunteerId %}
-          <p class="muted">Vullnetari: <a href="/profiles/{{ r.acceptedVolunteerId }}/">{{ r.acceptedVolunteerName }}</a></p>
-        {% else %}
-          <p class="muted">Pa vullnetar</p>
-        {% endif %}
-        <div class="chip-row" style="margin-top:6px;">
+        <h4 class="request-title"><a href="/requests/{{ r.id }}/">{{ r.title }}</a></h4>
+        <div class="request-meta">
+          <span class="request-meta-item">📍 {{ r.location }}</span>
+          <span class="request-meta-item">👤 <a href="/profiles/{{ r.ownerId }}/">{{ r.ownerName }}</a></span>
+          {% if r.acceptedVolunteerId %}
+            <span class="request-meta-item">✅ <a href="/profiles/{{ r.acceptedVolunteerId }}/">{{ r.acceptedVolunteerName }}</a></span>
+          {% else %}
+            <span class="request-meta-item">⏳ Pa vullnetar</span>
+          {% endif %}
+        </div>
+        <div class="chip-row request-card-actions">
           <a class="chip link" href="/requests/{{ r.id }}/">Detajet</a>
           {% if request.session.user.id != r.ownerId %}
             <a class="chip" href="/requests/{{ r.id }}/#apply">Apliko</a>
           {% endif %}
         </div>
-        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:6px;">
+        <div class="request-owner-actions">
           {% if request.session.user.id == r.ownerId %}
             {% if r.status == "IN_PROGRESS" %}
               <form method="post" action="/requests/{{ r.id }}/complete/">
                 {% csrf_token %}
-                <button type="submit">Përfundo</button>
+                <button type="submit">✅ Përfundo</button>
               </form>
             {% endif %}
             {% if r.status != "CANCELLED" and r.status != "COMPLETED" %}
               <form method="post" action="/requests/{{ r.id }}/cancel/">
                 {% csrf_token %}
-                <button type="submit" class="ghost-btn">Anulo</button>
+                <button type="submit" class="ghost-btn">❌ Anulo</button>
               </form>
             {% endif %}
           {% else %}
-            <span class="muted">Veprime për pronarin</span>
+            <span class="muted">Vetëm pronari ka veprime</span>
           {% endif %}
         </div>
       </div>
     </div>
     {% endfor %}
   </div>
-</div>
+  {% else %}
+  <div class="empty-state">
+    <span class="empty-state-icon">📭</span>
+    <h3>Nuk ka thirrje</h3>
+    <p class="muted">Krijo thirrjen e parë ose shfleto thirrjet e hapura.</p>
+    <div class="form-actions" style="margin-top:12px;">
+      <button type="submit" form="request-create-form">Krijo thirrje</button>
+      <a class="btn-secondary" href="/requests/?tab=open#active-requests">Shfleto të hapurat</a>
+    </div>
+  </div>
+  {% endif %}
 
 <script>
   (function(){
     const uploadBtn = document.getElementById('upload-request-image');
     if (!uploadBtn) return;
+    const fileInput = document.getElementById('request-image-file');
+    const statusEl = document.getElementById('request-image-status');
+    const previewEl = document.getElementById('request-image-preview');
+    const setStatus = (text, isError=false) => {
+      statusEl.textContent = text;
+      statusEl.style.color = isError ? '#dc2626' : '';
+    };
+    if (fileInput) {
+      fileInput.addEventListener('change', () => {
+        if (!fileInput.files.length) {
+          previewEl.innerHTML = '<span class="muted">Pamja paraprake shfaqet këtu</span>';
+          setStatus('Asnjë foto e zgjedhur');
+          return;
+        }
+        const file = fileInput.files[0];
+        const url = URL.createObjectURL(file);
+        previewEl.innerHTML = '<img alt="Pamja paraprake" src="' + url + '">';
+        setStatus('Foto e zgjedhur: ' + file.name);
+      });
+    }
+    const uploadCard = document.getElementById('request-upload-card');
+    if (uploadCard) {
+      uploadCard.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadCard.classList.add('dragging');
+      });
+      uploadCard.addEventListener('dragleave', () => uploadCard.classList.remove('dragging'));
+      uploadCard.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadCard.classList.remove('dragging');
+        if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length) {
+          fileInput.files = e.dataTransfer.files;
+          fileInput.dispatchEvent(new Event('change'));
+        }
+      });
+    }
     uploadBtn.addEventListener('click', async () => {
-      const fileInput = document.getElementById('request-image-file');
       if (!fileInput.files.length) { alert('Zgjidh një foto'); return; }
       const fd = new FormData();
       fd.append('file', fileInput.files[0]);
       try {
+        setStatus('Duke ngarkuar foton...');
         const res = await fetch((window.API_BASE_URL || "http://localhost:8080").replace(/\/+$/,'') + "/api/files/request", {
           method: 'POST',
           headers: {"Authorization": "Bearer {{ request.session.token|default:'' }}"},
@@ -89,9 +209,9 @@
         if (!res.ok) { throw new Error('Ngarkimi dështoi'); }
         const data = await res.json();
         document.getElementById('request-image-url').value = data.url;
-        alert('Foto u ngarkua');
+        setStatus('Foto u ngarkua me sukses');
       } catch (err) {
-        alert(err.message);
+        setStatus(err.message, true);
       }
     });
   })();

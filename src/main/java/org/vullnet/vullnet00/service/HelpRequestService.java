@@ -7,6 +7,7 @@ import org.springframework.web.server.ResponseStatusException;
 import org.vullnet.vullnet00.dto.HelpRequestCreateRequest;
 import org.vullnet.vullnet00.dto.HelpRequestResponse;
 import org.vullnet.vullnet00.model.HelpRequest;
+import org.vullnet.vullnet00.model.NotificationType;
 import org.vullnet.vullnet00.model.RequestStatus;
 import org.vullnet.vullnet00.model.User;
 import org.vullnet.vullnet00.repo.HelpRequestRepo;
@@ -118,6 +119,20 @@ public class HelpRequestService {
         rewardService.awardForCompletion(saved.getAcceptedVolunteer());
         notificationService.notifyEmail(saved.getOwner(), "Thirrja u përfundua", "Thirrja \"" + saved.getTitle() + "\" u shënua si e përfunduar.");
         notificationService.notifyEmail(saved.getAcceptedVolunteer(), "Thirrja u përfundua", "Thirrja \"" + saved.getTitle() + "\" u përfundua.");
+        notificationService.notifyInApp(
+                saved.getOwner(),
+                NotificationType.REQUEST_STATUS,
+                "Thirrja u përfundua",
+                "Thirrja \"" + saved.getTitle() + "\" u shënua si e përfunduar.",
+                "/requests/" + saved.getId() + "/"
+        );
+        notificationService.notifyInApp(
+                saved.getAcceptedVolunteer(),
+                NotificationType.REQUEST_STATUS,
+                "Thirrja u përfundua",
+                "Thirrja \"" + saved.getTitle() + "\" u përfundua.",
+                "/requests/" + saved.getId() + "/"
+        );
         return toResponse(saved, userId);
     }
 
@@ -137,7 +152,21 @@ public class HelpRequestService {
         if (saved.getAcceptedVolunteer() != null) {
             notificationService.notifyEmail(saved.getAcceptedVolunteer(), "Thirrja u anulua", "Thirrja \"" + saved.getTitle() + "\" u anulua.");
             notificationService.notifySms(saved.getAcceptedVolunteer(), "Thirrja \"" + saved.getTitle() + "\" u anulua.");
+            notificationService.notifyInApp(
+                    saved.getAcceptedVolunteer(),
+                    NotificationType.REQUEST_STATUS,
+                    "Thirrja u anulua",
+                    "Thirrja \"" + saved.getTitle() + "\" u anulua.",
+                    "/requests/" + saved.getId() + "/"
+            );
         }
+        notificationService.notifyInApp(
+                saved.getOwner(),
+                NotificationType.REQUEST_STATUS,
+                "Thirrja u anulua",
+                "Thirrja \"" + saved.getTitle() + "\" u anulua.",
+                "/requests/" + saved.getId() + "/"
+        );
         return toResponse(saved, userId);
     }
 

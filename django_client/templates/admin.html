@@ -18,7 +18,7 @@
       <th>Roli</th>
       <th>Statusi</th>
       <th>Ndrysho rolin</th>
-      <th>Aktivo / çaktivo</th>
+      <th>Aktivizo / çaktivizo</th>
     </tr>
     {% for u in users %}
     <tr>
@@ -27,7 +27,7 @@
       <td>{{ u.email }}</td>
       <td>{{ u.phone }}</td>
       <td><span class="pill">{{ u.role }}</span></td>
-      <td>{% if u.active %}Aktiv{% else %}Çaktiv{% endif %}</td>
+      <td>{% if u.active %}Aktiv{% else %}Jo aktiv{% endif %}</td>
       <td>
         <form method="post" action="/admin-dashboard/users/{{ u.id }}/role/" style="display:inline;">
           {% csrf_token %}
@@ -70,7 +70,7 @@
             <button type="button" class="pill upload-cover">Ngarko kopertinë</button>
             <textarea name="gallery" rows="2" placeholder="Galeria (URL me rreshta)">{% if b.gallery %}{{ b.gallery|join:'\n' }}{% endif %}</textarea>
             <input type="file" class="gallery-files" multiple>
-            <button type="button" class="pill upload-gallery">Ngarko galeri</button>
+            <button type="button" class="pill upload-gallery">Ngarko galerinë</button>
             <label><input type="checkbox" name="published" {% if b.published %}checked{% endif %}> Publikuar</label>
             <div class="blog-actions">
               <button type="submit">Ruaj</button>
@@ -88,7 +88,7 @@
     </div>
     <div>
       <h3>Shto artikull</h3>
-      <p class="muted">Kliko butonin për të hapur formularin në popup.</p>
+      <p class="muted">Kliko butonin për të hapur formularin në dritare.</p>
       <button type="button" onclick="document.getElementById('blog-modal').style.display='flex';">Artikull i ri</button>
     </div>
   </div>

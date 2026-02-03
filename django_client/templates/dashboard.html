@@ -3,49 +3,52 @@
 <div class="card" id="tour-hero">
   <div class="section-head">
     <div>
-      <p class="eyebrow">Mirë se erdhe, {{ user.firstName }} {{ user.lastName }}</p>
-      <h1>Orientohu shpejt dhe nis veprimin</h1>
-      <p class="muted">Krijo thirrje, apliko për të ndihmuar, ndiq pikët dhe mos humb asnjë status.</p>
+      <div class="section-label" style="margin-bottom:1.5rem;">
+        <div class="section-label-dot"></div>
+        <span class="section-label-text">Mirë se erdhe</span>
+      </div>
+      <h1 class="gradient-text">{{ user.firstName }}, nis veprimin sot</h1>
+      <p class="muted" style="font-size:1rem;">Krijo thirrje, apliko për të ndihmuar, ndiq pikët dhe mos humb asnjë status të rëndësishëm.</p>
     </div>
-    <div class="pill">Përdor gjuhën shqip + veprime të shpejta</div>
+    <div class="pill" style="margin-left:auto;">Shqip • Me ritëm</div>
   </div>
   <div class="stats">
     <div class="stat">
-      <div class="pill">Pikë</div>
-      <h2>{{ rewards.points|default:0 }}</h2>
-      <p class="muted">Pika besueshmërie</p>
+      <div class="pill">🏆 Pikë</div>
+      <h2 style="color:var(--accent); margin:0.5rem 0;">{{ rewards.points|default:0 }}</h2>
+      <p class="muted">Besueshmëria</p>
     </div>
     <div class="stat">
-      <div class="pill">Thirrje të përfunduara</div>
-      <h2>{{ rewards.completedRequests|default:0 }}</h2>
+      <div class="pill">✓ Përfunduar</div>
+      <h2 style="color:var(--accent); margin:0.5rem 0;">{{ rewards.completedRequests|default:0 }}</h2>
       <p class="muted">Si vullnetar</p>
     </div>
     <div class="stat">
-      <div class="pill">Vlerësimi mesatar</div>
-      <h2>{{ rewards.averageRating|default:"0"|floatformat:1 }}/5</h2>
+      <div class="pill">⭐ Vlerësim</div>
+      <h2 style="color:var(--accent); margin:0.5rem 0;">{{ rewards.averageRating|default:"0"|floatformat:1 }}/5</h2>
       <p class="muted">{{ rewards.reviewCount|default:0 }} vlerësime</p>
     </div>
   </div>
   <div class="quick-grid" id="tour-shortcuts">
     <a class="quick-card" href="/requests/">
-      <p class="eyebrow">Pronari</p>
-      <h3>Krijo / menaxho thirrje</h3>
-      <p class="muted">Ngarko foto, përshkrim, kontakto dhe fto vullnetarë.</p>
+      <p class="eyebrow" style="color:var(--accent); font-weight:700;">PRONARI</p>
+      <h3 style="color:var(--foreground);">Krijo / Menaxho</h3>
+      <p class="muted">Ngarko foto, përshkrim, kontakto vullnetarë.</p>
     </a>
-    <a class="quick-card" href="/requests/open/">
-      <p class="eyebrow">Vullnetar</p>
-      <h3>Shfleto thirrje të hapura</h3>
+    <a class="quick-card" href="/requests/?tab=open#active-requests">
+      <p class="eyebrow" style="color:var(--accent); font-weight:700;">VULLNETAR</p>
+      <h3 style="color:var(--foreground);">Shfleto thirrje</h3>
       <p class="muted">Apliko shpejt dhe ndiq statusin.</p>
     </a>
     <a class="quick-card" href="/applications/">
-      <p class="eyebrow">Statuset</p>
-      <h3>Aplikimet e mia</h3>
-      <p class="muted">Shiko pranime, refuzime ose në pritje.</p>
+      <p class="eyebrow" style="color:var(--accent); font-weight:700;">STATUSET</p>
+      <h3 style="color:var(--foreground);">Aplikimet e mia</h3>
+      <p class="muted">Pranime, refuzime, në pritje.</p>
     </a>
     <a class="quick-card" href="/profile/">
-      <p class="eyebrow">Identitet</p>
-      <h3>Përditëso profilin</h3>
-      <p class="muted">Avatar, bio, aftësi dhe distinktivë.</p>
+      <p class="eyebrow" style="color:var(--accent); font-weight:700;">PROFILI</p>
+      <h3 style="color:var(--foreground);">Përditëso</h3>
+      <p class="muted">Avatar, bio, aftësi, distinktivë.</p>
     </a>
     {% if user.role == "ADMIN" %}
     <a class="quick-card" href="/admin-dashboard/">
@@ -57,47 +60,68 @@
   </div>
 </div>
 
-<div class="card" id="tour-notifs">
-  <div class="section-head">
-    <div>
+<div class="dashboard-lower">
+  <div class="card" id="tour-notifs">
+    <div class="section-head">
+      <div>
       <p class="eyebrow">Njoftime & veprime</p>
-      <h3>Shih çfarë ka ndryshuar së fundi</h3>
+        <h3>Shih çfarë ka ndryshuar së fundi</h3>
+      </div>
+      <a class="pill link" href="/applications/">Shko te aplikimet</a>
     </div>
-    <a class="pill link" href="/applications/">Shko te aplikimet</a>
+    <div class="notification-list">
+      {% for n in notifications %}
+        <div class="notification-row">
+          <div>
+            <p class="muted" style="margin:0;">{{ n.type }}</p>
+            <strong><a href="{{ n.link }}">{{ n.title }}</a></strong>
+            <div class="chip-row">
+              <span class="status-pill" data-status="{{ n.status|default:'UNKNOWN' }}">{{ n.status|default:'—' }}</span>
+            </div>
+          </div>
+          <a class="pill" href="{{ n.link }}">Shko</a>
+        </div>
+      {% empty %}
+        <p class="muted">Asnjë njoftim. Apliko ose krijo një thirrje për të parë ndryshimet.</p>
+      {% endfor %}
+    </div>
   </div>
-  <div class="notification-list">
-    {% for n in notifications %}
-      <div class="notification-row">
-        <div>
-          <p class="muted" style="margin:0;">{{ n.type }}</p>
-          <strong><a href="{{ n.link }}">{{ n.title }}</a></strong>
-          <div class="chip-row">
-            <span class="status-pill" data-status="{{ n.status|default:'UNKNOWN' }}">{{ n.status|default:'—' }}</span>
+
+  <div class="card" id="tour-leaderboard">
+    <h3>🏆 Leaderboard i vullnetarëve</h3>
+      <p class="muted">Top 5 sipas pikëve</p>
+    <div class="leader-header">
+      <span>Vullnetari</span>
+      <span>Statistikat</span>
+      <span>Pikë</span>
+    </div>
+    <div class="leaderboard">
+      {% for p in leaderboard %}
+        <div class="leader-row rank-{{ forloop.counter }}">
+          <div class="leader-rank rank-{{ forloop.counter }}">
+            {% if forloop.counter == 1 %}🥇{% elif forloop.counter == 2 %}🥈{% elif forloop.counter == 3 %}🥉{% else %}{{ forloop.counter }}{% endif %}
+          </div>
+          <div class="leader-info">
+            <strong><a href="/profiles/{{ p.id }}/">{{ p.firstName }} {{ p.lastName }}</a></strong>
+            <div class="leader-stats">
+              <span class="leader-chip">✅ {{ p.completedRequests|default:0 }} thirrje</span>
+              <span class="leader-chip">⭐ {{ p.averageRating|default:"0"|floatformat:1 }}/5</span>
+              <span class="leader-chip">💬 {{ p.reviewCount|default:0 }} vlerësime</span>
+            </div>
+          </div>
+          <div class="leader-points">
+            <span class="pill">{{ p.rewardPoints|default:0 }} pikë</span>
+            <span class="rank-change up">↑</span>
           </div>
         </div>
-        <a class="pill" href="{{ n.link }}">Shko</a>
-      </div>
-    {% empty %}
-      <p class="muted">Asnjë njoftim. Apliko ose krijo një thirrje për të parë ndryshimet.</p>
-    {% endfor %}
-  </div>
-</div>
-
-<div class="card" id="tour-leaderboard">
-  <h3>Leaderboard i vullnetarëve</h3>
-  <p class="muted">Top 5 sipas pikëve</p>
-  <div class="leaderboard">
-    {% for p in leaderboard %}
-      <div class="leader-row">
-        <div>
-          <strong><a href="/profiles/{{ p.id }}/">{{ p.firstName }} {{ p.lastName }}</a></strong><br>
-          <span class="muted">{{ p.completedRequests|default:0 }} thirrje • {{ p.reviewCount|default:0 }} vlerësime • {{ p.averageRating|default:"0"|floatformat:1 }}/5</span>
+      {% empty %}
+        <div class="empty-state">
+          <span class="empty-state-icon">📊</span>
+          <h3>Ende s'ka pikë</h3>
+          <p class="muted">Apliko ose krijo thirrje për ta parë leaderboard-in.</p>
         </div>
-        <div class="pill">{{ p.rewardPoints|default:0 }} pikë</div>
-      </div>
-    {% empty %}
-      <p class="muted">Ende nuk ka pikë të llogaritura.</p>
-    {% endfor %}
+      {% endfor %}
+    </div>
   </div>
 </div>
 
@@ -108,7 +132,7 @@
     <ol>
       <li>Paneli i mësipërm ka shkurtesat kryesore (krijo thirrje, aplikime, profil).</li>
       <li>Njoftimet këtu tregojnë statuset e aplikimeve dhe thirrjeve të tua.</li>
-      <li>Leaderboard të ndihmon të shohësh motivimin dhe distinktivët e komunitetit.</li>
+      <li>Leaderboard-i të ndihmon të shohësh motivimin dhe distinktivët e komunitetit.</li>
     </ol>
     <div class="actions">
       <button type="button" class="ghost-btn" id="tour-hide">Mbyll</button>
