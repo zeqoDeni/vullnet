@@ -116,7 +116,14 @@
             {% if forloop.counter == 1 %}🥇{% elif forloop.counter == 2 %}🥈{% elif forloop.counter == 3 %}🥉{% else %}{{ forloop.counter }}{% endif %}
           </div>
           <div class="leader-info">
-            <strong><a href="/profiles/{{ p.id }}/">{{ p.firstName }} {{ p.lastName }}</a></strong>
+            <div class="leader-user">
+              {% if p.avatarUrl %}
+                <img class="leader-avatar" src="{{ p.avatarUrl }}" alt="{{ p.firstName }} {{ p.lastName }}">
+              {% else %}
+                <div class="leader-avatar fallback">{{ p.firstName|default:"?"|slice:":1" }}</div>
+              {% endif %}
+              <strong><a href="/profiles/{{ p.id }}/">{{ p.firstName }} {{ p.lastName }}</a></strong>
+            </div>
             <div class="leader-stats">
               <span class="leader-chip">✅ {{ p.completedRequests|default:0 }} thirrje</span>
               <span class="leader-chip">⭐ {{ p.averageRating|default:"0"|floatformat:1 }}/5</span>

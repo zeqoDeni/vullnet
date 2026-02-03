@@ -140,6 +140,8 @@ def dashboard(request):
     lb_resp = api.get_leaderboard(params={"page": 0, "size": 5})
     if lb_resp.status_code == 200:
         leaderboard = _safe_json(lb_resp, {}).get("content", [])
+        for item in leaderboard:
+            item["avatarUrl"] = _full_media_url(item.get("avatarUrl"), request)
     notif_resp = api.get_notifications(token, params={"page": 0, "size": 8})
     if notif_resp.status_code == 200:
         notifications = _safe_json(notif_resp, {}).get("content", [])

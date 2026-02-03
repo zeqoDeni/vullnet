@@ -60,6 +60,7 @@ public class RewardService {
                 .completedRequests(u.getCompletedRequests())
                 .averageRating(u.getAverageRating())
                 .reviewCount(u.getReviewCount())
+                .avatarUrl(u.getAvatarUrl())
                 .build();
     }
 }
