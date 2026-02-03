@@ -321,8 +321,8 @@ a:hover {
 
 .notif-badge {
   position: absolute;
-  top: -6px;
-  right: -6px;
+  top: 2px;
+  right: 2px;
   min-width: 18px;
   height: 18px;
   padding: 0 4px;
@@ -335,6 +335,7 @@ a:hover {
   align-items: center;
   justify-content: center;
   line-height: 1;
+  box-shadow: 0 0 0 2px var(--card);
 }
 
 .notif-badge.show {
