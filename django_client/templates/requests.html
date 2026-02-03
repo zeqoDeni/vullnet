@@ -68,8 +68,7 @@
       </div>
       <div class="upload-actions">
         <input type="file" id="request-image-file" accept="image/*">
-        <button type="button" class="btn-secondary" id="upload-request-image">Ngarko foton</button>
-        <span class="upload-status muted" id="request-image-status">Asnjë foto e zgjedhur</span>
+        <span class="upload-status muted" id="request-image-status">Zgjidh një foto për ngarkim automatik</span>
       </div>
       <div class="upload-preview" id="request-image-preview">
         <span class="muted">Pamja paraprake shfaqet këtu</span>
@@ -157,28 +156,84 @@
 
 <script>
   (function(){
-    const uploadBtn = document.getElementById('upload-request-image');
-    if (!uploadBtn) return;
     const fileInput = document.getElementById('request-image-file');
     const statusEl = document.getElementById('request-image-status');
     const previewEl = document.getElementById('request-image-preview');
+    if (!fileInput || !statusEl || !previewEl) return;
     const setStatus = (text, isError=false) => {
       statusEl.textContent = text;
       statusEl.style.color = isError ? '#dc2626' : '';
     };
-    if (fileInput) {
-      fileInput.addEventListener('change', () => {
-        if (!fileInput.files.length) {
-          previewEl.innerHTML = '<span class="muted">Pamja paraprake shfaqet këtu</span>';
-          setStatus('Asnjë foto e zgjedhur');
-          return;
+    const compressImage = (file) => new Promise((resolve, reject) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        const maxSize = 1600;
+        let { width, height } = img;
+        if (width > height && width > maxSize) {
+          height = Math.round((height * maxSize) / width);
+          width = maxSize;
+        } else if (height >= width && height > maxSize) {
+          width = Math.round((width * maxSize) / height);
+          height = maxSize;
         }
-        const file = fileInput.files[0];
-        const url = URL.createObjectURL(file);
-        previewEl.innerHTML = '<img alt="Pamja paraprake" src="' + url + '">';
-        setStatus('Foto e zgjedhur: ' + file.name);
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        canvas.toBlob((blob) => {
+          URL.revokeObjectURL(url);
+          if (!blob) {
+            reject(new Error('Dështoi kompresimi i fotos'));
+            return;
+          }
+          resolve(blob);
+        }, 'image/jpeg', 0.8);
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        reject(new Error('Foto e pavlefshme'));
+      };
+      img.src = url;
+    });
+
+    const uploadFile = async (blob, filename) => {
+      const fd = new FormData();
+      fd.append('file', new File([blob], filename, { type: 'image/jpeg' }));
+      const res = await fetch((window.API_BASE_URL || "http://localhost:8080").replace(/\/+$/,'') + "/api/files/request", {
+        method: 'POST',
+        headers: {"Authorization": "Bearer {{ request.session.token|default:'' }}"},
+        body: fd
       });
-    }
+      if (!res.ok) { throw new Error('Ngarkimi dështoi'); }
+      return res.json();
+    };
+
+    const handleFile = async (file) => {
+      try {
+        setStatus('Duke kompresuar foton...');
+        const compressed = await compressImage(file);
+        const previewUrl = URL.createObjectURL(compressed);
+        previewEl.innerHTML = '<img alt="Pamja paraprake" src="' + previewUrl + '">';
+        setStatus('Duke ngarkuar foton...');
+        const filename = (file.name || 'request') + '.jpg';
+        const data = await uploadFile(compressed, filename);
+        document.getElementById('request-image-url').value = data.url;
+        setStatus('Foto u ngarkua me sukses');
+      } catch (err) {
+        setStatus(err.message || 'Ngarkimi dështoi', true);
+      }
+    };
+
+    fileInput.addEventListener('change', async () => {
+      if (!fileInput.files.length) {
+        previewEl.innerHTML = '<span class="muted">Pamja paraprake shfaqet këtu</span>';
+        setStatus('Zgjidh një foto për ngarkim automatik');
+        return;
+      }
+      await handleFile(fileInput.files[0]);
+    });
     const uploadCard = document.getElementById('request-upload-card');
     if (uploadCard) {
       uploadCard.addEventListener('dragover', (e) => {
@@ -195,25 +250,6 @@
         }
       });
     }
-    uploadBtn.addEventListener('click', async () => {
-      if (!fileInput.files.length) { alert('Zgjidh një foto'); return; }
-      const fd = new FormData();
-      fd.append('file', fileInput.files[0]);
-      try {
-        setStatus('Duke ngarkuar foton...');
-        const res = await fetch((window.API_BASE_URL || "http://localhost:8080").replace(/\/+$/,'') + "/api/files/request", {
-          method: 'POST',
-          headers: {"Authorization": "Bearer {{ request.session.token|default:'' }}"},
-          body: fd
-        });
-        if (!res.ok) { throw new Error('Ngarkimi dështoi'); }
-        const data = await res.json();
-        document.getElementById('request-image-url').value = data.url;
-        setStatus('Foto u ngarkua me sukses');
-      } catch (err) {
-        setStatus(err.message, true);
-      }
-    });
   })();
 </script>
 {% endblock %}
