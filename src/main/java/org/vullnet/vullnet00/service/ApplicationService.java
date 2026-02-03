@@ -51,7 +51,9 @@ public class ApplicationService {
                 "Ke një aplikim të ri për thirrjen \"" + helpRequest.getTitle() + "\"",
                 "/requests/" + helpRequest.getId() + "/"
         );
-        return toResponse(applicationRepo.save(app));
+        Application saved = applicationRepo.save(app);
+        notifyAdminsForNewApplication(saved);
+        return toResponse(saved);
     }
 
     @org.springframework.transaction.annotation.Transactional
@@ -172,5 +174,21 @@ public class ApplicationService {
                 .status(app.getStatus() != null ? app.getStatus().name() : null)
                 .message(app.getMessage())
                 .build();
+    }
+
+    private void notifyAdminsForNewApplication(Application app) {
+        HelpRequest request = app.getHelpRequest();
+        String title = request != null ? request.getTitle() : "Thirrje";
+        Long requestId = request != null ? request.getId() : null;
+        String link = requestId != null ? "/requests/" + requestId + "/" : "/requests/";
+        for (User admin : repo.findByRole(Role.ADMIN)) {
+            notificationService.notifyInApp(
+                    admin,
+                    NotificationType.APPLICATION,
+                    "Aplikim i ri",
+                    "U dërgua një aplikim i ri për \"" + title + "\"",
+                    link
+            );
+        }
     }
 }

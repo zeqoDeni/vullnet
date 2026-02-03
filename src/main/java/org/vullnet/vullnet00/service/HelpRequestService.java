@@ -57,7 +57,9 @@ public class HelpRequestService {
                 .imageUrl(req.getImageUrl())
                 .build();
 
-        return toResponse(helpRequestRepo.save(helpRequest), userId);
+        HelpRequest saved = helpRequestRepo.save(helpRequest);
+        notifyAdminsForNewRequest(saved);
+        return toResponse(saved, userId);
     }
 
     public Page<HelpRequestResponse> getAll(Long ownerId, RequestStatus status, String search, Pageable pageable, Long viewerId) {
@@ -190,5 +192,17 @@ public class HelpRequestService {
         requestMessageRepo.deleteByHelpRequestId(requestId);
         reviewRepo.deleteByHelpRequestId(requestId);
         helpRequestRepo.delete(request);
+    }
+
+    private void notifyAdminsForNewRequest(HelpRequest request) {
+        for (User admin : userRepo.findByRole(org.vullnet.vullnet00.model.Role.ADMIN)) {
+            notificationService.notifyInApp(
+                    admin,
+                    NotificationType.SYSTEM,
+                    "Thirrje e re",
+                    "U postua një thirrje e re: \"" + request.getTitle() + "\"",
+                    "/requests/" + request.getId() + "/"
+            );
+        }
     }
 }
