@@ -11,7 +11,10 @@
   <link rel="stylesheet" href="{% static 'css/style.css' %}">
   <link rel="icon" type="image/svg+xml" href="{% static 'img/favicon.svg' %}">
   <script>
-    window.API_BASE_URL = "{{ settings.API_BASE_URL|default:'http://localhost:8080' }}";
+    (function() {
+      const apiBase = "{{ api_base_url|default:'' }}".trim();
+      window.API_BASE_URL = apiBase || window.location.origin;
+    })();
     
     // Disable right-click context menu
     document.addEventListener('contextmenu', function(e) {
