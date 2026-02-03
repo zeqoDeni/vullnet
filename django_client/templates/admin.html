@@ -9,83 +9,87 @@
     <div class="stat">Aplikime: {{ stats.applications }}</div>
   </div>
   <h3>Përdoruesit</h3>
-  <table>
-    <tr>
-      <th>ID</th>
-      <th>Emri</th>
-      <th>Email</th>
-      <th>Telefon</th>
-      <th>Roli</th>
-      <th>Statusi</th>
-      <th>Ndrysho rolin</th>
-      <th>Aktivizo / çaktivizo</th>
-    </tr>
-    {% for u in users %}
-    <tr>
-      <td>{{ u.id }}</td>
-      <td><a href="/profiles/{{ u.id }}/">{{ u.firstName }} {{ u.lastName }}</a></td>
-      <td>{{ u.email }}</td>
-      <td>{{ u.phone }}</td>
-      <td><span class="pill">{{ u.role }}</span></td>
-      <td>{% if u.active %}Aktiv{% else %}Jo aktiv{% endif %}</td>
-      <td>
-        <form method="post" action="/admin-dashboard/users/{{ u.id }}/role/" style="display:inline;">
-          {% csrf_token %}
-          <select name="role">
-            <option value="USER" {% if u.role == "USER" %}selected{% endif %}>USER</option>
-            <option value="ADMIN" {% if u.role == "ADMIN" %}selected{% endif %}>ADMIN</option>
-          </select>
-          <button type="submit">Ruaj</button>
-        </form>
-      </td>
-      <td>
-        <form method="post" action="/admin-dashboard/users/{{ u.id }}/status/" style="display:inline;">
-          {% csrf_token %}
-          <input type="hidden" name="active" value="{% if u.active %}false{% else %}true{% endif %}">
-          <button type="submit">{% if u.active %}Çaktivizo{% else %}Aktivizo{% endif %}</button>
-        </form>
-      </td>
-    </tr>
-    {% endfor %}
-  </table>
+  <div class="table-scroll">
+    <table>
+      <tr>
+        <th>ID</th>
+        <th>Emri</th>
+        <th>Email</th>
+        <th>Telefon</th>
+        <th>Roli</th>
+        <th>Statusi</th>
+        <th>Ndrysho rolin</th>
+        <th>Aktivizo / çaktivizo</th>
+      </tr>
+      {% for u in users %}
+      <tr>
+        <td>{{ u.id }}</td>
+        <td><a href="/profiles/{{ u.id }}/">{{ u.firstName }} {{ u.lastName }}</a></td>
+        <td>{{ u.email }}</td>
+        <td>{{ u.phone }}</td>
+        <td><span class="pill">{{ u.role }}</span></td>
+        <td>{% if u.active %}Aktiv{% else %}Jo aktiv{% endif %}</td>
+        <td>
+          <form method="post" action="/admin-dashboard/users/{{ u.id }}/role/" style="display:inline;">
+            {% csrf_token %}
+            <select name="role">
+              <option value="USER" {% if u.role == "USER" %}selected{% endif %}>USER</option>
+              <option value="ADMIN" {% if u.role == "ADMIN" %}selected{% endif %}>ADMIN</option>
+            </select>
+            <button type="submit">Ruaj</button>
+          </form>
+        </td>
+        <td>
+          <form method="post" action="/admin-dashboard/users/{{ u.id }}/status/" style="display:inline;">
+            {% csrf_token %}
+            <input type="hidden" name="active" value="{% if u.active %}false{% else %}true{% endif %}">
+            <button type="submit">{% if u.active %}Çaktivizo{% else %}Aktivizo{% endif %}</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
 </div>
 
 <div class="card">
   <h3>Thirrjet (admin)</h3>
   <p class="muted">Fshije një thirrje nëse është e papërshtatshme ose e rreme.</p>
-  <table>
-    <tr>
-      <th>ID</th>
-      <th>Titulli</th>
-      <th>Pronari</th>
-      <th>Statusi</th>
-      <th>Veprime</th>
-    </tr>
-    {% for r in requests %}
-    <tr>
-      <td>#{{ r.id }}</td>
-      <td><a href="/requests/{{ r.id }}/">{{ r.title }}</a></td>
-      <td>
-        {% if r.ownerId %}
-          <a href="/profiles/{{ r.ownerId }}/">{{ r.ownerName|default:"Përdorues" }}</a>
-        {% else %}
-          —
-        {% endif %}
-      </td>
-      <td><span class="pill">{{ r.status }}</span></td>
-      <td>
-        <form method="post" action="/admin-dashboard/requests/{{ r.id }}/delete/" style="display:inline;">
-          {% csrf_token %}
-          <button type="submit" class="danger" onclick="return confirm('Je i sigurt që do ta fshish këtë thirrje?');">Fshi</button>
-        </form>
-      </td>
-    </tr>
-    {% empty %}
-    <tr>
-      <td colspan="5" class="muted">Nuk ka thirrje për momentin.</td>
-    </tr>
-    {% endfor %}
-  </table>
+  <div class="table-scroll">
+    <table>
+      <tr>
+        <th>ID</th>
+        <th>Titulli</th>
+        <th>Pronari</th>
+        <th>Statusi</th>
+        <th>Veprime</th>
+      </tr>
+      {% for r in requests %}
+      <tr>
+        <td>#{{ r.id }}</td>
+        <td><a href="/requests/{{ r.id }}/">{{ r.title }}</a></td>
+        <td>
+          {% if r.ownerId %}
+            <a href="/profiles/{{ r.ownerId }}/">{{ r.ownerName|default:"Përdorues" }}</a>
+          {% else %}
+            —
+          {% endif %}
+        </td>
+        <td><span class="pill">{{ r.status }}</span></td>
+        <td>
+          <form method="post" action="/admin-dashboard/requests/{{ r.id }}/delete/" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="danger" onclick="return confirm('Je i sigurt që do ta fshish këtë thirrje?');">Fshi</button>
+          </form>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="5" class="muted">Nuk ka thirrje për momentin.</td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
 </div>
 
 <div class="card">

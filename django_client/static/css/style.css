@@ -951,6 +951,12 @@ textarea {
     flex: 1;
     min-width: 200px;
   }
+  .admin-two-col {
+    grid-template-columns: 1fr;
+  }
+  .table-scroll table {
+    min-width: 600px;
+  }
 }
 
 .profile-preview-card {
@@ -1634,6 +1640,30 @@ tbody tr:hover {
 
 tbody tr:last-child td {
   border-bottom: 2px solid var(--border);
+}
+
+.table-scroll {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.table-scroll table {
+  min-width: 720px;
+}
+
+.admin-two-col {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: 1.5rem;
+}
+
+.blog-admin-row {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  background: linear-gradient(135deg, var(--muted) 0%, rgba(0, 82, 255, 0.02) 100%);
 }
 
 .request-actions-cell {
