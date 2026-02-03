@@ -1,0 +1,29 @@
+name: Manual Deploy (Prod)
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Branch to deploy"
+        required: false
+        default: "production"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DOCKER_HOST_ADDRESS }}
+          username: root
+          key: ${{ secrets.DOCKER_HOST_PRIVATE_KEY }}
+          script: |
+            set -euo pipefail
+            cd /root/vullnet
+            git fetch --all --prune
+            git checkout "${{ inputs.ref }}"
+            git pull --ff-only origin "${{ inputs.ref }}"
+            docker compose --env-file /root/.env.prod -f docker-compose.prod.yml pull
+            docker compose --env-file /root/.env.prod -f docker-compose.prod.yml up -d --build
+            docker compose --env-file /root/.env.prod -f docker-compose.prod.yml ps
