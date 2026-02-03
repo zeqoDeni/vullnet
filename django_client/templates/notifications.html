@@ -13,7 +13,10 @@
     {% for n in notifications %}
       <div class="notification-row{% if not n.read %} unread{% endif %}">
         <div>
-          <p class="muted" style="margin:0;">{{ n.type|default:"Njoftim" }}</p>
+          <p class="muted" style="margin:0;">
+            {% if n.type == "APPLICATION" %}📝{% elif n.type == "REQUEST_STATUS" %}✅{% else %}📣{% endif %}
+            {{ n.type|default:"Njoftim" }}
+          </p>
           <strong>
             {% if n.link %}
               <a href="{{ n.link }}">{{ n.title }}</a>

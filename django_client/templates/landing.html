@@ -370,11 +370,13 @@
               } else {
                 items.forEach(n => {
                   const isUnread = !n.read;
-                  const link = n.link ? `<a href="${n.link}">${n.title}</a>` : n.title;
+                  const type = (n.type || '').toUpperCase();
+                  const emoji = type === 'APPLICATION' ? '📝' : (type === 'REQUEST_STATUS' ? '✅' : '📣');
+                  const link = n.link ? `<a href="${n.link}">${emoji} ${n.title}</a>` : `${emoji} ${n.title}`;
                   const body = n.body ? `<p class="muted">${n.body}</p>` : "";
                   notifList.insertAdjacentHTML("beforeend",
                     `<div class="notif-item ${isUnread ? "unread" : ""}" data-id="${n.id}">
-                       <span class="notif-type">${n.type || 'Njoftim'}</span>
+                       <span class="notif-type">${emoji} ${n.type || 'Njoftim'}</span>
                        <div class="notif-main">
                          <strong>${link}</strong>
                          ${body}
