@@ -181,6 +181,11 @@
         canvas.width = width;
         canvas.height = height;
         const ctx = canvas.getContext('2d');
+        const outputType = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+        if (outputType === 'image/jpeg') {
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, width, height);
+        }
         ctx.drawImage(img, 0, 0, width, height);
         canvas.toBlob((blob) => {
           URL.revokeObjectURL(url);
@@ -188,8 +193,8 @@
             reject(new Error('Dështoi kompresimi i fotos'));
             return;
           }
-          resolve(blob);
-        }, 'image/jpeg', 0.8);
+          resolve({ blob, type: outputType });
+        }, outputType, outputType === 'image/jpeg' ? 0.8 : 0.92);
       };
       img.onerror = () => {
         URL.revokeObjectURL(url);
@@ -198,9 +203,9 @@
       img.src = url;
     });
 
-    const uploadFile = async (blob, filename) => {
+    const uploadFile = async (blob, filename, mimeType) => {
       const fd = new FormData();
-      fd.append('file', new File([blob], filename, { type: 'image/jpeg' }));
+      fd.append('file', new File([blob], filename, { type: mimeType }));
       const res = await fetch((window.API_BASE_URL || "http://localhost:8080").replace(/\/+$/,'') + "/api/files/request", {
         method: 'POST',
         headers: {"Authorization": "Bearer {{ request.session.token|default:'' }}"},
@@ -214,11 +219,12 @@
       try {
         setStatus('Duke kompresuar foton...');
         const compressed = await compressImage(file);
-        const previewUrl = URL.createObjectURL(compressed);
+        const previewUrl = URL.createObjectURL(compressed.blob);
         previewEl.innerHTML = '<img alt="Pamja paraprake" src="' + previewUrl + '">';
         setStatus('Duke ngarkuar foton...');
-        const filename = (file.name || 'request') + '.jpg';
-        const data = await uploadFile(compressed, filename);
+        const ext = compressed.type === 'image/png' ? '.png' : '.jpg';
+        const filename = (file.name ? file.name.replace(/\.[^/.]+$/, '') : 'request') + ext;
+        const data = await uploadFile(compressed.blob, filename, compressed.type);
         document.getElementById('request-image-url').value = data.url;
         setStatus('Foto u ngarkua me sukses');
       } catch (err) {
