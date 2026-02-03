@@ -246,6 +246,7 @@ a:hover {
   color: var(--foreground);
   text-decoration: none;
   transition: all 0.2s ease;
+  overflow: visible;
 }
 
 .nav-links .nav-icon {
@@ -310,10 +311,12 @@ a:hover {
 
 .nav-notifs {
   position: relative;
+  overflow: visible;
 }
 
 .notif-toggle {
   position: relative;
+  overflow: visible;
 }
 
 .notif-badge {
