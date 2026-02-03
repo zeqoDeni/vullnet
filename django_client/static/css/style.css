@@ -1628,6 +1628,19 @@ tbody tr:last-child td {
   border-bottom: 2px solid var(--border);
 }
 
+.request-actions-cell {
+  white-space: nowrap;
+}
+
+.request-actions-cell form {
+  display: inline-flex;
+}
+
+.request-action-btn {
+  padding: 0.55rem 0.9rem;
+  font-size: 0.9rem;
+}
+
 /* Leaderboard */
 .leaderboard-table tr:nth-child(1) td:first-child::before { content: "🥇 "; }
 .leaderboard-table tr:nth-child(2) td:first-child::before { content: "🥈 "; }
@@ -2184,6 +2197,18 @@ tbody tr:last-child td {
 
   table { font-size: 0.9rem; }
   th, td { padding: 0.9rem; }
+  .request-actions-cell {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .request-actions-cell form {
+    flex: 1 1 120px;
+  }
+  .request-action-btn {
+    width: 100%;
+    justify-content: center;
+  }
 
   .hero-graphic {
     height: 300px;

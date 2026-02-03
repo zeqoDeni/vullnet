@@ -262,6 +262,8 @@ def requests_list(request):
         response = api.get_requests(token, params=params)
     data = _safe_json(response, {"content": []}) if response.status_code == 200 else {"content": []}
     requests_list = data.get("content", [])
+    for item in requests_list:
+        item["imageUrl"] = _full_media_url(item.get("imageUrl"), request)
     if tab == "mine":
         user_id = (request.session.get("user") or {}).get("id")
         if user_id:
@@ -297,6 +299,7 @@ def request_detail(request, request_id):
     req_resp = api.get_request(token, request_id)
     if req_resp.status_code == 200:
         request_data = _safe_json(req_resp, {})
+        request_data["imageUrl"] = _full_media_url(request_data.get("imageUrl"), request)
     else:
         messages.error(request, _safe_message(req_resp, "Thirrja nuk u gjet"))
         return redirect("requests")
