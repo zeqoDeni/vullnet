@@ -520,6 +520,27 @@ def admin_delete_request(request, request_id):
         messages.error(request, _safe_message(resp, "Fshirja dështoi"))
     return redirect("admin_dashboard")
 
+@require_http_methods(["POST"])
+def admin_broadcast_notification(request):
+    token = _get_token(request)
+    if not token:
+        return redirect("login")
+    if not _is_admin(request):
+        messages.error(request, "Kërkohet akses admin")
+        return redirect("dashboard")
+    payload = {
+        "type": request.POST.get("type", "SYSTEM"),
+        "title": request.POST.get("title", ""),
+        "body": request.POST.get("body", ""),
+        "link": request.POST.get("link", ""),
+    }
+    resp = api.broadcast_notification(token, payload)
+    if resp.status_code in (200, 201):
+        messages.success(request, "Njoftimi u dërgua")
+    else:
+        messages.error(request, _safe_message(resp, "Dërgimi dështoi"))
+    return redirect("admin_dashboard")
+
 
 @require_http_methods(["POST"])
 def accept_application(request, application_id):

@@ -88,6 +88,39 @@
   </table>
 </div>
 
+<div class="card">
+  <h3>Njoftim për të gjithë</h3>
+  <p class="muted">Dërgo një njoftim që shfaqet te të gjithë përdoruesit.</p>
+  <form method="post" action="/admin-dashboard/notifications/broadcast/" class="request-form">
+    {% csrf_token %}
+    <div class="form-grid">
+      <div class="form-field">
+        <label for="broadcast_type">Lloji</label>
+        <select id="broadcast_type" name="type">
+          <option value="SYSTEM">SYSTEM</option>
+          <option value="APPLICATION">APPLICATION</option>
+          <option value="REQUEST_STATUS">REQUEST_STATUS</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label for="broadcast_title">Titulli</label>
+        <input id="broadcast_title" type="text" name="title" placeholder="P.sh. Përditësim i rëndësishëm" required>
+      </div>
+    </div>
+    <div class="form-field">
+      <label for="broadcast_body">Mesazhi</label>
+      <textarea id="broadcast_body" name="body" rows="3" placeholder="Shkruaj përmbajtjen e njoftimit"></textarea>
+    </div>
+    <div class="form-field">
+      <label for="broadcast_link">Link (opsional)</label>
+      <input id="broadcast_link" type="text" name="link" placeholder="/requests/ ose https://...">
+    </div>
+    <div class="form-actions">
+      <button type="submit">Dërgo njoftimin</button>
+    </div>
+  </form>
+</div>
+
 <div id="blog-admin" data-token="{{ token }}" data-api="{{ api_base }}">
   <div class="card admin-two-col">
     <div>

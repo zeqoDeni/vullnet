@@ -14,6 +14,7 @@ urlpatterns = [
     path("admin-dashboard/users/<int:user_id>/role/", views.update_role, name="update_role"),
     path("admin-dashboard/users/<int:user_id>/status/", views.update_status, name="update_status"),
     path("admin-dashboard/requests/<int:request_id>/delete/", views.admin_delete_request, name="admin_delete_request"),
+    path("admin-dashboard/notifications/broadcast/", views.admin_broadcast_notification, name="admin_broadcast_notification"),
     path("admin-dashboard/blogs/create/", views.create_blog, name="create_blog"),
     path("admin-dashboard/blogs/<int:blog_id>/update/", views.update_blog, name="update_blog"),
     path("admin-dashboard/blogs/<int:blog_id>/delete/", views.delete_blog, name="delete_blog"),

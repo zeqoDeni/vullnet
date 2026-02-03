@@ -247,6 +247,13 @@ def get_unread_notification_count(token):
         headers=_headers(token),
     )
 
+def broadcast_notification(token, payload):
+    return requests.post(
+        f"{settings.API_BASE_URL}/api/notifications/broadcast",
+        headers=_headers(token),
+        json=payload,
+    )
+
 
 def get_public_stats():
     return requests.get(f"{settings.API_BASE_URL}/api/public/stats")

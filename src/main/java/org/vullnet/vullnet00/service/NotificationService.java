@@ -9,6 +9,7 @@ import org.vullnet.vullnet00.model.Notification;
 import org.vullnet.vullnet00.model.NotificationType;
 import org.vullnet.vullnet00.model.User;
 import org.vullnet.vullnet00.repo.NotificationRepo;
+import org.vullnet.vullnet00.repo.UserRepo;
 
 import java.time.LocalDateTime;
 
@@ -18,6 +19,7 @@ import java.time.LocalDateTime;
 public class NotificationService {
 
     private final NotificationRepo notificationRepo;
+    private final UserRepo userRepo;
 
     public void notifyEmail(User user, String subject, String body) {
         if (user == null || user.getEmail() == null) return;
@@ -59,6 +61,21 @@ public class NotificationService {
 
     public long countUnread(Long userId) {
         return notificationRepo.countByRecipientIdAndReadAtIsNull(userId);
+    }
+
+    public void notifyAll(String type, String title, String body, String link) {
+        NotificationType notifType = NotificationType.SYSTEM;
+        if (type != null && !type.isBlank()) {
+            try {
+                notifType = NotificationType.valueOf(type.toUpperCase());
+            } catch (IllegalArgumentException ignored) {
+                notifType = NotificationType.SYSTEM;
+            }
+        }
+        String safeTitle = title != null && !title.isBlank() ? title : "Njoftim";
+        for (User user : userRepo.findAll()) {
+            notifyInApp(user, notifType, safeTitle, body, link);
+        }
     }
 
     private NotificationResponse toResponse(Notification notification) {
