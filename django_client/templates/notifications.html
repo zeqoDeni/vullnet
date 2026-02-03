@@ -11,7 +11,7 @@
 
   <div class="notification-list">
     {% for n in notifications %}
-      <div class="notification-row">
+      <div class="notification-row{% if not n.read %} unread{% endif %}">
         <div>
           <p class="muted" style="margin:0;">{{ n.type|default:"Njoftim" }}</p>
           <strong>
@@ -23,6 +23,9 @@
           </strong>
           {% if n.body %}
             <p class="muted" style="margin:0.35rem 0 0;">{{ n.body }}</p>
+          {% endif %}
+          {% if n.createdAt %}
+            <p class="muted" style="margin:0.35rem 0 0;">{{ n.createdAt }}</p>
           {% endif %}
         </div>
         {% if n.link %}

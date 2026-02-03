@@ -71,15 +71,26 @@
     </div>
     <div class="notification-list">
       {% for n in notifications %}
-        <div class="notification-row">
+        <div class="notification-row{% if not n.read %} unread{% endif %}">
           <div>
-            <p class="muted" style="margin:0;">{{ n.type }}</p>
-            <strong><a href="{{ n.link }}">{{ n.title }}</a></strong>
-            <div class="chip-row">
-              <span class="status-pill" data-status="{{ n.status|default:'UNKNOWN' }}">{{ n.status|default:'—' }}</span>
-            </div>
+            <p class="muted" style="margin:0;">{{ n.type|default:"Njoftim" }}</p>
+            <strong>
+              {% if n.link %}
+                <a href="{{ n.link }}">{{ n.title }}</a>
+              {% else %}
+                {{ n.title }}
+              {% endif %}
+            </strong>
+            {% if n.body %}
+              <p class="muted" style="margin:0.35rem 0 0;">{{ n.body }}</p>
+            {% endif %}
+            {% if n.createdAt %}
+              <p class="muted" style="margin:0.35rem 0 0;">{{ n.createdAt }}</p>
+            {% endif %}
           </div>
-          <a class="pill" href="{{ n.link }}">Shko</a>
+          {% if n.link %}
+            <a class="pill" href="{{ n.link }}">Shko</a>
+          {% endif %}
         </div>
       {% empty %}
         <p class="muted">Asnjë njoftim. Apliko ose krijo një thirrje për të parë ndryshimet.</p>

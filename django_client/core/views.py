@@ -133,7 +133,6 @@ def dashboard(request):
     leaderboard = []
     notifications = []
     user = request.session.get("user") or {}
-    user_id = user.get("id")
 
     rewards_resp = api.get_rewards(token)
     if rewards_resp.status_code == 200:
@@ -141,30 +140,9 @@ def dashboard(request):
     lb_resp = api.get_leaderboard(params={"page": 0, "size": 5})
     if lb_resp.status_code == 200:
         leaderboard = _safe_json(lb_resp, {}).get("content", [])
-    apps_resp = api.my_applications(token, params={"page": 0, "size": 6})
-    if apps_resp.status_code == 200:
-        for a in _safe_json(apps_resp, {}).get("content", []):
-            notifications.append(
-                {
-                    "type": "Aplikim",
-                    "title": f"Thirrja #{a.get('helpRequestId')}",
-                    "status": a.get("status"),
-                    "link": f"/requests/{a.get('helpRequestId')}/",
-                }
-            )
-    req_resp = api.get_requests(token, params={"page": 0, "size": 6})
-    if req_resp.status_code == 200 and user_id:
-        for r in _safe_json(req_resp, {}).get("content", []):
-            if r.get("ownerId") != user_id:
-                continue
-            notifications.append(
-                {
-                    "type": "Thirrje",
-                    "title": r.get("title") or f"Thirrja #{r.get('id')}",
-                    "status": r.get("status"),
-                    "link": f"/requests/{r.get('id')}/",
-                }
-            )
+    notif_resp = api.get_notifications(token, params={"page": 0, "size": 8})
+    if notif_resp.status_code == 200:
+        notifications = _safe_json(notif_resp, {}).get("content", [])
     return render(
         request,
         "dashboard.html",

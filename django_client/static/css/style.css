@@ -1393,6 +1393,11 @@ textarea {
   background: linear-gradient(135deg, var(--muted) 0%, rgba(0, 82, 255, 0.03) 100%);
 }
 
+.notification-row.unread {
+  border-color: rgba(0, 82, 255, 0.35);
+  box-shadow: 0 0 0 1px rgba(0, 82, 255, 0.08);
+}
+
 .notification-row strong a {
   color: var(--foreground);
   text-decoration: none;
