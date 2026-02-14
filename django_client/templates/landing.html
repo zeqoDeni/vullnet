@@ -67,8 +67,8 @@
   </header>
 
   <main class="container">
-    <section style="display:flex; gap:3rem; align-items:center; flex-wrap:wrap; margin:3rem 0;">
-      <div style="flex:1 1 320px; min-width:280px;">
+    <section class="hero-section" style="display:flex; gap:3rem; align-items:center; flex-wrap:wrap; margin:3rem 0;">
+      <div class="hero-copy" style="flex:1 1 320px; min-width:280px;">
         <div class="section-label">
           <div class="section-label-dot"></div>
           <span class="section-label-text">Mirë se vini në Vullnet</span>
@@ -77,12 +77,12 @@
         <p style="font-size:1.1rem; line-height:1.8; color:var(--muted-foreground); margin-bottom:1.5rem;">
           Komuniteti që lidh thirrjet me vullnetarët, me pikë, vlerësime dhe blog në shqip. Fito pikë për çdo thirrje të përfunduar.
         </p>
-        <div style="display:flex; gap:1rem; flex-wrap:wrap;">
+        <div class="hero-actions" style="display:flex; gap:1rem; flex-wrap:wrap;">
           <a href="/requests/?tab=open#active-requests" class="btn-primary">Shfleto thirrjet</a>
           <a href="/register/" class="btn-secondary">Krijo llogari</a>
         </div>
       </div>
-      <div style="flex:1 1 280px; min-width:260px;">
+      <div class="hero-visual" style="flex:1 1 280px; min-width:260px;">
         <div class="hero-graphic">
           <!-- Background Elements -->
           <div class="hero-graphic-ring"></div>
@@ -130,7 +130,7 @@
       </div>
     </section>
 
-    <section class="inverted">
+    <section class="inverted inverted-center">
       <div class="section-label" style="margin-bottom:2rem;">
         <div class="section-label-dot"></div>
         <span class="section-label-text">Statuset</span>
@@ -240,7 +240,7 @@
     </section>
 
     <!-- Testimonials Section (Inverted) -->
-    <section class="inverted" style="margin:4rem -2rem 0; padding:3rem 2rem;">
+    <section class="inverted inverted-center" style="margin:4rem -2rem 0; padding:3rem 2rem;">
       <div class="section-label" style="margin-bottom:2rem;">
         <div class="section-label-dot"></div>
         <span class="section-label-text">Dëshmitë</span>
@@ -309,7 +309,6 @@
     </div>
   </footer>
 
-  {% if request.session.user %}
   <script>
     (function() {
       const toggle = document.getElementById('menu-toggle');
@@ -320,6 +319,12 @@
           link.addEventListener('click', () => menu.classList.remove('active'));
         });
       }
+    })();
+  </script>
+
+  {% if request.session.user %}
+  <script>
+    (function() {
       const notifToggle = document.getElementById('notif-toggle');
       const notifPanel = document.getElementById('notif-panel');
       const notifList = document.getElementById('notif-list');

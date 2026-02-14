@@ -194,6 +194,9 @@ def profile(request):
             messages.error(request, _safe_message(response, "Përditësimi dështoi"))
     response = api.get_profile(token, user_id)
     profile_data = _safe_json(response, {}) if response.status_code == 200 else {}
+    # Ensure the public profile link has an ID even if the profile payload is missing it.
+    if user_id and not profile_data.get("id"):
+        profile_data["id"] = user_id
     if profile_data.get("avatarUrl"):
         profile_data["avatarUrl"] = _full_media_url(profile_data.get("avatarUrl"), request)
     form_initial = {

@@ -43,7 +43,11 @@
         </div>
       </div>
       <div class="nav-actions">
+        {% if request.session.user %}
         <a class="nav-icon" href="/profile/" aria-label="Profili">🧑</a>
+        {% else %}
+        <a class="nav-icon" href="/login/" aria-label="Hyr">🧑</a>
+        {% endif %}
         <div class="nav-notifs">
           <button type="button" class="nav-icon notif-toggle" id="notif-toggle" aria-label="Njoftime">
             🔔
