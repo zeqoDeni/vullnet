@@ -21,7 +21,7 @@ public class FileStorageService {
     public String storeAvatar(Long userId, MultipartFile file) {
         try {
             validateImage(file);
-            String uploadDir = environment.getProperty("app.upload.dir", "/tmp/vullnet/uploads");
+            String uploadDir = environment.getProperty("app.upload.dir", "uploads");
             Path baseDir = Paths.get(uploadDir, "avatars");
             Files.createDirectories(baseDir);
             String ext = getExtension(file.getOriginalFilename());
@@ -40,7 +40,7 @@ public class FileStorageService {
     public String storeBlogImage(Long userId, MultipartFile file) {
         try {
             validateImage(file);
-            String uploadDir = environment.getProperty("app.upload.dir", "/tmp/vullnet/uploads");
+            String uploadDir = environment.getProperty("app.upload.dir", "uploads");
             Path baseDir = Paths.get(uploadDir, "blog");
             Files.createDirectories(baseDir);
             String ext = getExtension(file.getOriginalFilename());
@@ -59,7 +59,7 @@ public class FileStorageService {
     public String storeRequestImage(Long userId, MultipartFile file) {
         try {
             validateImage(file);
-            String uploadDir = environment.getProperty("app.upload.dir", "/tmp/vullnet/uploads");
+            String uploadDir = environment.getProperty("app.upload.dir", "uploads");
             Path baseDir = Paths.get(uploadDir, "requests");
             Files.createDirectories(baseDir);
             String ext = getExtension(file.getOriginalFilename());

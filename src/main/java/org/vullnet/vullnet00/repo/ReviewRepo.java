@@ -11,4 +11,5 @@ public interface ReviewRepo extends JpaRepository<Review, Long> {
     Page<Review> findByRevieweeId(Long revieweeId, Pageable pageable);
     Optional<Review> findByHelpRequestIdAndReviewerId(Long helpRequestId, Long reviewerId);
     boolean existsByHelpRequestIdAndReviewerId(Long helpRequestId, Long reviewerId);
+    void deleteByHelpRequestId(Long helpRequestId);
 }

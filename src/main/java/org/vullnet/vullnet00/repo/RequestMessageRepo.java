@@ -7,4 +7,5 @@ import org.vullnet.vullnet00.model.RequestMessage;
 
 public interface RequestMessageRepo extends JpaRepository<RequestMessage, Long> {
     Page<RequestMessage> findByHelpRequestIdOrderByCreatedAtAsc(Long helpRequestId, Pageable pageable);
+    void deleteByHelpRequestId(Long helpRequestId);
 }

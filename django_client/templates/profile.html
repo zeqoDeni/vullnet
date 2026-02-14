@@ -1,158 +1,209 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="profile-layout">
-  <section class="profile-hero card">
-    <div class="profile-cover"></div>
-    <div class="profile-header">
-      <div class="avatar-frame">
+<div style="max-width:1000px; margin:2rem auto; padding:0 2rem;">
+  <!-- Header Section -->
+  <div style="background:linear-gradient(135deg, var(--foreground) 0%, #0a0f1f 100%); color:white; border-radius:28px; padding:3rem 2rem; margin-bottom:3rem; position:relative; overflow:hidden;">
+    <div style="position:absolute; top:0; left:0; right:0; bottom:0; background-image:radial-gradient(circle at 1rem 1rem, white 1px, transparent 1px); background-size:4rem 4rem; opacity:0.05; pointer-events:none;"></div>
+    <div style="position:relative; z-index:1; display:flex; gap:2rem; align-items:flex-start;">
+      <!-- Avatar with Upload -->
+      <div style="flex-shrink:0; position:relative; group;">
         {% if profile.avatarUrl %}
-          <img src="{{ profile.avatarUrl }}" alt="Avatar">
+          <img src="{{ profile.avatarUrl }}" alt="Avatar" style="width:100px; height:100px; border-radius:20px; border:3px solid rgba(0, 82, 255, 0.6); object-fit:cover;">
         {% else %}
-          <img src="https://api.dicebear.com/7.x/identicon/svg?seed={{ profile.id|default:'user' }}" alt="Avatar">
+          <img src="https://api.dicebear.com/7.x/fun-emoji/svg?seed={{ profile.id }}" alt="Avatar" style="width:100px; height:100px; border-radius:20px; border:3px solid rgba(0, 82, 255, 0.6); object-fit:cover; display:block; background:white;">
         {% endif %}
-        <span class="pill pill-ghost">ID #{{ profile.id|default:"—" }}</span>
+        <label for="avatar_upload_header" style="position:absolute; bottom:0; right:0; background:var(--accent); color:white; width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:1rem; border:2px solid white; transition:all 0.2s ease;">
+          ✎
+        </label>
+        <input type="file" id="avatar_upload_header" name="avatar_file" accept="image/*" form="profile_form" style="display:none;" onchange="document.getElementById('avatar_form_submit').click();">
       </div>
-      <div class="profile-meta">
-        <p class="eyebrow">Profili im</p>
-        <h1>{{ profile.firstName|default:"Anëtar" }} {{ profile.lastName|default:"" }}</h1>
-        <p class="muted">
-          {% if profile.location %}{{ profile.location }} · {% endif %}
-          {% if profile.availability %}Gati për të ndihmuar{% else %}Momentalisht jo në dispozicion{% endif %}
+      <!-- Profile Info -->
+      <div style="flex:1;">
+        <p style="font-size:0.85rem; color:rgba(255, 255, 255, 0.8); margin:0 0 0.5rem; text-transform:uppercase; letter-spacing:0.05em; font-weight:600;">Profili im</p>
+        <h1 style="font-family:var(--font-display); font-size:2rem; color:white; margin:0 0 0.5rem; font-weight:700;">{{ profile.firstName|default:"Anëtar" }} {{ profile.lastName|default:"" }}</h1>
+        <p style="color:rgba(255, 255, 255, 0.9); margin:0 0 1rem; font-size:1.05rem;">
+          {% if profile.location %}<strong>📍 {{ profile.location }}</strong>{% endif %}
+          {% if profile.availability %}<span style="margin-left:1rem;"> 🟢 Gati për të ndihmuar</span>{% else %}<span style="margin-left:1rem;"> ⚫ Jo në dispozicion</span>{% endif %}
         </p>
-        <div class="chip-row">
-          <span class="chip">Telefon: {{ profile.phone|default:"—" }}</span>
-          <span class="chip">Publike: {% if profile.profilePublic %}Po{% else %}Jo{% endif %}</span>
-          <a class="chip link" href="/profiles/{{ profile.id }}/">Shiko si publik</a>
+        <!-- Stats Row -->
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(120px, 1fr)); gap:1rem; margin-top:1.5rem;">
+          <div>
+            <p style="color:rgba(255, 255, 255, 0.7); font-size:0.85rem; margin:0; text-transform:uppercase;">Pikë</p>
+            <p style="font-size:1.8rem; color:var(--accent); margin:0.25rem 0 0; font-weight:700;">{{ profile.rewardPoints|default:0 }}</p>
+          </div>
+          <div>
+            <p style="color:rgba(255, 255, 255, 0.7); font-size:0.85rem; margin:0; text-transform:uppercase;">Vlerësimi</p>
+            <p style="font-size:1.8rem; color:var(--accent); margin:0.25rem 0 0; font-weight:700;">{{ profile.averageRating|default:"0"|floatformat:1 }}/5</p>
+          </div>
+          <div>
+            <p style="color:rgba(255, 255, 255, 0.7); font-size:0.85rem; margin:0; text-transform:uppercase;">Përfunduar</p>
+            <p style="font-size:1.8rem; color:var(--accent); margin:0.25rem 0 0; font-weight:700;">{{ profile.completedRequests|default:0 }}</p>
+          </div>
         </div>
-        {% if profile.badges %}
-        <div class="badge-row">
-          {% for b in profile.badges %}
-            <span class="badge-chip">{{ b }}</span>
-          {% endfor %}
-        </div>
-        {% endif %}
       </div>
-      <div class="profile-stats">
-        <div class="stat-tile">
-          <p class="stat-label">Pikë</p>
-          <p class="stat-value">{{ profile.rewardPoints|default:0 }}</p>
-          <p class="stat-hint">Shtohet nga kontributet</p>
-        </div>
-        <div class="stat-tile">
-          <p class="stat-label">Vlerësimi</p>
-          <p class="stat-value">{{ profile.averageRating|default:"0"|floatformat:1 }}/5</p>
-          <p class="stat-hint">{{ profile.reviewCount|default:0 }} vlerësime</p>
-        </div>
-        <div class="stat-tile">
-          <p class="stat-label">Thirrje të përfunduara</p>
-          <p class="stat-value">{{ profile.completedRequests|default:0 }}</p>
-          <p class="stat-hint">Historiku i përfundimeve</p>
-        </div>
+      <!-- Actions -->
+      <div style="display:flex; flex-direction:column; gap:0.5rem;">
+        <a href="/profiles/{{ profile.id }}/" class="pill" style="padding:0.5rem 1.2rem; background:rgba(0, 82, 255, 0.2); color:white; border:1px solid rgba(0, 82, 255, 0.5); border-radius:20px; text-decoration:none; text-align:center; font-size:0.85rem; font-weight:600;">Shiko profilin publik →</a>
       </div>
     </div>
-  </section>
+  </div>
 
-  <section class="profile-content">
-    <div class="card profile-form">
-      <div class="section-head">
-        <div>
-          <p class="eyebrow">Përditëso profilin</p>
-          <h2>Më shumë besueshmëri me foto dhe bio të qartë</h2>
-          <p class="muted">Mbaj tonin në shqip, shto aftësitë dhe një bio të shkurtër. Avatarët duken më mirë në raport 1:1.</p>
-        </div>
+  <!-- Two Column Layout -->
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:2rem; margin-bottom:3rem;">
+    <!-- Edit Form Column -->
+    <div style="background:var(--card); border:2px solid var(--accent); border-radius:28px; padding:2rem;">
+      <div style="margin-bottom:2rem; padding-bottom:1.5rem; border-bottom:1px solid rgba(0, 0, 0, 0.1);">
+        <p style="color:var(--accent); font-size:0.85rem; margin:0 0 0.5rem; text-transform:uppercase; font-weight:600;">Përditëso</p>
+        <h2 style="font-family:var(--font-display); font-size:1.5rem; color:var(--foreground); margin:0;">Përditëso profilin</h2>
       </div>
-      <form method="post" enctype="multipart/form-data" class="form-grid">
+
+      <form method="post" enctype="multipart/form-data" style="display:flex; flex-direction:column; gap:1.5rem;" id="profile_form">
         {% csrf_token %}
-        <div class="field span-2">
-          <label for="{{ form.bio.id_for_label }}">Bio</label>
+        <button type="submit" id="avatar_form_submit" style="display:none;"></button>
+
+        <!-- Bio -->
+        <div style="display:flex; flex-direction:column; gap:0.5rem;">
+          <label style="font-weight:600; color:var(--foreground); font-size:0.95rem;">Bio</label>
           {{ form.bio }}
+          <p style="font-size:0.85rem; color:rgba(0, 0, 0, 0.6); margin:0;">Shkruaj diçka për veten dhe përvojat e tua</p>
         </div>
-        <div class="field">
-          <label for="{{ form.location.id_for_label }}">Vendndodhja</label>
-          {{ form.location }}
+
+        <!-- Location & Phone -->
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+          <div style="display:flex; flex-direction:column; gap:0.5rem;">
+            <label style="font-weight:600; color:var(--foreground); font-size:0.95rem;">Vendndodhja</label>
+            {{ form.location }}
+          </div>
+          <div style="display:flex; flex-direction:column; gap:0.5rem;">
+            <label style="font-weight:600; color:var(--foreground); font-size:0.95rem;">Telefon</label>
+            {{ form.phone }}
+          </div>
         </div>
-        <div class="field">
-          <label for="{{ form.phone.id_for_label }}">Telefon</label>
-          {{ form.phone }}
-        </div>
-        <div class="field span-2">
-          <label for="{{ form.skills.id_for_label }}">Aftësitë & fushat</label>
+
+        <!-- Skills -->
+        <div style="display:flex; flex-direction:column; gap:0.5rem;">
+          <label style="font-weight:600; color:var(--foreground); font-size:0.95rem;">Aftësitë</label>
           {{ form.skills }}
-          <p class="hint">Përdor presje për t'i ndarë (p.sh. koordinim, logjistikë, mjeksi)</p>
+          <p style="font-size:0.85rem; color:rgba(0, 0, 0, 0.6); margin:0;">Ndaje me presje: koordinim, logjistikë, mjekësi</p>
         </div>
-        <div class="field">
-          <label for="{{ form.avatarUrl.id_for_label }}">Link i fotos (opsional)</label>
-          {{ form.avatarUrl }}
-          <p class="hint">Nëse s'ke link, ngarko skedarin më poshtë.</p>
+
+        <!-- Checkboxes -->
+        <div style="display:flex; flex-direction:column; gap:1rem; padding-top:1rem; border-top:1px solid rgba(0, 0, 0, 0.1);">
+          <label style="display:flex; align-items:center; gap:0.75rem; cursor:pointer;">
+            {{ form.availability }}
+            <span style="color:var(--foreground); font-weight:500;">Jam gati të pranoj thirrje</span>
+          </label>
+          <label style="display:flex; align-items:center; gap:0.75rem; cursor:pointer;">
+            {{ form.profilePublic }}
+            <span style="color:var(--foreground); font-weight:500;">Bëj profilin tim publik</span>
+          </label>
         </div>
-        <div class="field">
-          <label>Ngarko avatar</label>
-          <input type="file" name="avatar_file" accept="image/*">
-          <p class="hint">Formatet .jpg/.png, deri në 2MB.</p>
-        </div>
-        <div class="field">
-          <label for="{{ form.availability.id_for_label }}">Disponueshmëri</label>
-          <div class="checkbox-row">
-            {{ form.availability }} <span>Jam gati të pranoj thirrje</span>
-          </div>
-        </div>
-        <div class="field">
-          <label for="{{ form.profilePublic.id_for_label }}">Profili publik</label>
-          <div class="checkbox-row">
-            {{ form.profilePublic }} <span>Shfaq profilin tim për të tjerët</span>
-          </div>
-        </div>
-        <div class="actions span-2">
-          <button type="submit">Ruaj ndryshimet</button>
-          <p class="hint">Ndryshimet reflektohen menjëherë.</p>
-        </div>
+
+        <!-- Submit -->
+        <button type="submit" class="btn-primary" style="padding:0.875rem 1.5rem; font-size:1rem; font-weight:600; margin-top:1rem;">
+          Ruaj ndryshimet
+        </button>
       </form>
+
+      <!-- Input Styling -->
+      <style>
+        form input[type="text"],
+        form input[type="email"],
+        form input[type="phone"],
+        form textarea,
+        form select,
+        form input[type="file"],
+        form input[type="checkbox"] {
+          padding: 0.75rem;
+          border: 1.5px solid rgba(0, 82, 255, 0.2);
+          border-radius: 12px;
+          font-size: 0.95rem;
+          font-family: var(--font-body);
+          background: rgba(0, 82, 255, 0.02);
+          color: var(--foreground);
+          transition: all 0.2s ease;
+          box-sizing: border-box;
+          width: 100%;
+        }
+        
+        form input[type="text"]:focus,
+        form input[type="email"]:focus,
+        form input[type="phone"]:focus,
+        form textarea:focus,
+        form select:focus,
+        form input[type="file"]:focus {
+          outline: none !important;
+          border-color: var(--accent) !important;
+          background: rgba(0, 82, 255, 0.05) !important;
+          box-shadow: 0 0 0 3px rgba(0, 82, 255, 0.08) !important;
+        }
+
+        form textarea {
+          resize: vertical;
+          min-height: 80px;
+        }
+
+        form input[type="checkbox"] {
+          width: auto;
+          cursor: pointer;
+        }
+      </style>
     </div>
 
+    <!-- Preview Column -->
     {% if profile %}
-    <div class="card profile-preview">
-      <div class="section-head">
-        <div>
-          <p class="eyebrow">Paraqitje e shpejtë</p>
-          <h3>Si të tjerët e shohin profilin tënd publik</h3>
-        </div>
-        <a class="pill link" href="/profiles/{{ profile.id }}/">Hap faqen publike</a>
+    <div class="profile-preview-card">
+      <div class="profile-preview-head">
+        <p class="profile-preview-kicker">Paraqitje</p>
+        <h2>Si të shohin të tjerët</h2>
       </div>
-      <div class="preview-grid">
-        <div>
-          <p class="muted label">Bio</p>
-          <p class="lead">{{ profile.bio|default:"Shto diçka për veten, eksperiencë dhe motivim." }}</p>
-          <div class="chip-row">
-            <span class="chip">Vendndodhja: {{ profile.location|default:"—" }}</span>
-            <span class="chip">Telefon: {{ profile.phone|default:"—" }}</span>
-            <span class="chip">Disponueshmëri: {% if profile.availability %}Po{% else %}Jo{% endif %}</span>
+
+      <div class="profile-preview-body">
+        <div class="profile-preview-section">
+          <p class="profile-preview-label">Bio</p>
+          <p class="profile-preview-text">{{ profile.bio|default:"Shto diçka për veten, përvojën dhe motivimin." }}</p>
+        </div>
+
+        <div class="profile-preview-grid">
+          <div class="profile-preview-tile">
+            <p class="profile-preview-label">📍 Vendndodhja</p>
+            <p class="profile-preview-value">{{ profile.location|default:"—" }}</p>
+          </div>
+          <div class="profile-preview-tile">
+            <p class="profile-preview-label">📞 Telefon</p>
+            <p class="profile-preview-value">{{ profile.phone|default:"—" }}</p>
           </div>
         </div>
-        <div>
-          <p class="muted label">Aftësi</p>
-          <div class="pill-cloud">
+
+        <div class="profile-preview-section">
+          <p class="profile-preview-label">🧩 Aftësitë</p>
+          <div class="profile-preview-pills">
             {% if skills_list %}
               {% for skill in skills_list %}
-                <span class="pill">{{ skill }}</span>
+                <span class="profile-preview-pill">{{ skill }}</span>
               {% endfor %}
             {% else %}
-              <span class="pill pill-ghost">Shto aftësitë që t'u besojnë më shpejt</span>
+              <span class="profile-preview-muted">Shto aftësitë në formën më sipër</span>
             {% endif %}
           </div>
-          <p class="muted label" style="margin-top:12px;">Distinktivë</p>
-          <div class="badge-row">
+        </div>
+
+        <div class="profile-preview-section">
+          <p class="profile-preview-label">Distinktivë</p>
+          <div class="profile-preview-pills">
             {% if profile.badges %}
               {% for b in profile.badges %}
-                <span class="badge-chip">{{ b }}</span>
+                <span class="profile-preview-badge">{{ b }}</span>
               {% endfor %}
             {% else %}
-              <span class="pill pill-ghost">Distinktivët shfaqen automatikisht nga kontributet</span>
+              <span class="profile-preview-muted">Fitohen me kontribut</span>
             {% endif %}
           </div>
         </div>
       </div>
     </div>
     {% endif %}
-  </section>
+  </div>
 </div>
+
 {% endblock %}

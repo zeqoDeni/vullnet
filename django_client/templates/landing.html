@@ -2,124 +2,427 @@
 <html>
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Vullnet - Ndihmo. Apliko. Bashkohu.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/css/style.css">
+  <script>
+    (function() {
+      const apiBase = "{{ api_base_url|default:'' }}".trim();
+      window.API_BASE_URL = apiBase || window.location.origin;
+    })();
+  </script>
 </head>
 <body>
   <header class="site-header">
     <div class="brand"><a href="/" style="color:inherit; text-decoration:none;">Vullnet</a></div>
-    <nav class="nav-links">
+    <button class="menu-toggle" id="menu-toggle" aria-label="Toggle menu">☰</button>
+    <nav class="nav-links" id="nav-menu">
+      {% if request.session.user %}
+      <div class="nav-group">
+        <a href="/dashboard/">Paneli</a>
+        <a href="/requests/">Thirrjet</a>
+        <a href="/applications/">Aplikimet</a>
+        <div class="nav-more">
+          <button type="button" class="nav-more-toggle">Më shumë</button>
+          <div class="nav-more-menu">
+            <a href="/blog/">Blog</a>
+            <a href="/about/">Rreth nesh</a>
+          </div>
+        </div>
+      </div>
+      <div class="nav-actions">
+        <a class="nav-icon" href="/profile/" aria-label="Profili">🧑</a>
+        <div class="nav-notifs">
+          <button type="button" class="nav-icon notif-toggle" id="notif-toggle" aria-label="Njoftime">
+            🔔
+            <span class="notif-badge" id="notif-badge" aria-hidden="true"></span>
+          </button>
+          <div class="notif-panel" id="notif-panel" aria-hidden="true">
+            <div class="notif-head">
+              <span>Njoftimet</span>
+              <a href="/notifications/" class="notif-link">Shiko të gjitha</a>
+            </div>
+            <div class="notif-list" id="notif-list">
+              <p class="muted">Duke ngarkuar...</p>
+            </div>
+          </div>
+        </div>
+        <a class="nav-cta icon-cta" href="/requests/#request-create-form" aria-label="Krijo thirrje">+</a>
+        <a class="nav-logout" href="/logout/">Dil</a>
+      </div>
+      {% else %}
       <a href="/login/">Hyr</a>
       <a href="/register/">Regjistrohu</a>
-      <a href="/requests/open/">Thirrje</a>
+      <a href="/requests/?tab=open#active-requests">Thirrje</a>
       <a href="/blog/">Blog</a>
+      <a href="/about/">Rreth nesh</a>
+      {% endif %}
     </nav>
-    <a class="pill" style="padding:10px 14px; background: linear-gradient(135deg, #22d3ee, #f97316); color:#0b1220; font-weight:700;" href="/requests/open/">Shfleto tani</a>
+    {% if not request.session.user %}
+    <a class="pill" href="/requests/?tab=open#active-requests">Shfleto tani</a>
+    {% endif %}
   </header>
 
   <main class="container">
-    <section class="hero">
-      <div style="display:flex; gap:20px; align-items:center; flex-wrap:wrap;">
-        <div style="flex:1 1 320px;">
-          <h1>Ndihmo. Apliko. Bashkohu.</h1>
-          <p class="hero-sub">Komuniteti që lidh thirrjet me vullnetarët, me pikë, vlerësime dhe blog në shqip.</p>
-          <p class="hero-sub">Fitoni pikë për çdo thirrje të përfunduar, merrni vlerësime dhe ngjituni në leaderboard.</p>
-          <div class="cta-buttons">
-            <a href="/requests/open/" class="primary">Shfleto thirrjet</a>
-            <a href="/register/" class="ghost">Krijo llogari</a>
-          </div>
+    <section class="hero-section" style="display:flex; gap:3rem; align-items:center; flex-wrap:wrap; margin:3rem 0;">
+      <div class="hero-copy" style="flex:1 1 320px; min-width:280px;">
+        <div class="section-label">
+          <div class="section-label-dot"></div>
+          <span class="section-label-text">Mirë se vini në Vullnet</span>
         </div>
-        <div style="flex:1 1 280px; min-width:260px;">
-          <img src="/static/img/landing-collage.svg" alt="Komuniteti Vullnet" style="width:100%; border-radius:16px; border:1px solid var(--border); box-shadow:0 20px 60px rgba(0,0,0,0.35); background:#0b1220;">
+        <h1 class="gradient-text">Ndihmo. Apliko. Bashkohu.</h1>
+        <p style="font-size:1.1rem; line-height:1.8; color:var(--muted-foreground); margin-bottom:1.5rem;">
+          Komuniteti që lidh thirrjet me vullnetarët, me pikë, vlerësime dhe blog në shqip. Fito pikë për çdo thirrje të përfunduar.
+        </p>
+        <div class="hero-actions" style="display:flex; gap:1rem; flex-wrap:wrap;">
+          <a href="/requests/?tab=open#active-requests" class="btn-primary">Shfleto thirrjet</a>
+          <a href="/register/" class="btn-secondary">Krijo llogari</a>
+        </div>
+      </div>
+      <div class="hero-visual" style="flex:1 1 280px; min-width:260px;">
+        <div class="hero-graphic">
+          <!-- Background Elements -->
+          <div class="hero-graphic-ring"></div>
+          <div class="hero-graphic-ring"></div>
+          <div class="hero-graphic-ring"></div>
+          <span class="hero-graphic-dot dot-1"></span>
+          <span class="hero-graphic-dot dot-2"></span>
+          <span class="hero-graphic-dot dot-3"></span>
+          <span class="hero-graphic-dot dot-4"></span>
+          <span class="hero-graphic-dot dot-5"></span>
+          <span class="hero-graphic-dot dot-6"></span>
+          
+          <!-- Floating Cards -->
+          <div class="hero-graphic-card card-left">
+            <strong style="color:var(--accent);">+50</strong><br>
+            <span class="muted" style="font-size:0.8rem;">Pikë</span>
+          </div>
+          <div class="hero-graphic-card card-right">
+            <strong style="color:var(--accent);">★★★★★</strong><br>
+            <span class="muted" style="font-size:0.8rem;">Vlerësim</span>
+          </div>
+          
+          <!-- Top Badge -->
+          <div class="hero-graphic-badge badge-top">
+            <span style="color:var(--accent); font-weight:700;">🤝 Të Lidhur</span>
+          </div>
+          
+          <!-- Bottom Badge -->
+          <div class="hero-graphic-badge badge-bottom">
+            <span style="color:var(--accent); font-weight:700;">🚀 Bëjmë Ndryshim</span>
+          </div>
+          
+          <!-- Extra Shapes -->
+          <span class="hero-graphic-shape shape-pill"></span>
+          <span class="hero-graphic-shape shape-square"></span>
+          <span class="hero-graphic-shape shape-arc"></span>
+          <span class="hero-graphic-emoji emoji-1">😄</span>
+          <span class="hero-graphic-emoji emoji-2">😅</span>
+          <span class="hero-graphic-emoji emoji-3">😂</span>
+          <span class="hero-graphic-emoji emoji-4">😆</span>
+          
+          <!-- Accent Element -->
+          <div class="hero-graphic-accent"></div>
         </div>
       </div>
     </section>
 
-    <div class="stats">
-      <div class="stat"><strong>Thirrje të hapura</strong><br><span class="muted">Menaxho dhe prano aplikime</span></div>
-      <div class="stat"><strong>Vullnetarë aktivë</strong><br><span class="muted">Apliko me mesazh</span></div>
-      <div class="stat"><strong>Historitë e suksesit</strong><br><span class="muted">Këndvështrime nga komuniteti</span></div>
-    </div>
-
-    <div class="card">
-      <h3>Si funksionon</h3>
-      <div class="section-grid">
-        <div class="feature-card"><strong>01. Krijo thirrje</strong><p class="muted">Përshkruaj nevojën, vendndodhjen dhe publikohu.</p></div>
-        <div class="feature-card"><strong>02. Aplikime</strong><p class="muted">Vullnetarët dërgojnë mesazh me dispozicionin e tyre.</p></div>
-        <div class="feature-card"><strong>03. Menaxho</strong><p class="muted">Prano/Refuzo aplikime dhe çoje thirrjen përpara.</p></div>
-        <div class="feature-card"><strong>04. Mbyll</strong><p class="muted">Shëno si të përfunduar ose anulo nëse nuk nevojitet më.</p></div>
+    <section class="inverted inverted-center">
+      <div class="section-label" style="margin-bottom:2rem;">
+        <div class="section-label-dot"></div>
+        <span class="section-label-text">Statuset</span>
       </div>
-    </div>
-
-    <div class="card">
-      <h3>Sistem shpërblimesh</h3>
-      <div class="section-grid">
-        <div class="feature-card"><strong>Pikë</strong><p class="muted">Fitoni pikë për çdo thirrje të përfunduar.</p></div>
-        <div class="feature-card"><strong>Vlerësime</strong><p class="muted">Merr 1–5 yje nga pronari apo vullnetari.</p></div>
-        <div class="feature-card"><strong>Leaderboard</strong><p class="muted">Ngjituni në krye të komunitetit.</p></div>
+      <div class="stats">
+        <div class="stat" style="background:rgba(255,255,255,0.05); border-color:rgba(255,255,255,0.1);">
+          <strong style="color:white;">{{ stats.openRequests|default:0 }}</strong>
+          <h2 style="color:rgba(77, 124, 255, 0.9);">Thirrje të hapura</h2>
+          <p class="muted" style="color:rgba(255,255,255,0.85);">Menaxho dhe prano aplikime</p>
+        </div>
+        <div class="stat" style="background:rgba(255,255,255,0.05); border-color:rgba(255,255,255,0.1);">
+          <strong style="color:white;">{{ stats.activeVolunteers|default:0 }}</strong>
+          <h2 style="color:rgba(77, 124, 255, 0.9);">Vullnetarë aktivë</h2>
+          <p class="muted" style="color:rgba(255,255,255,0.85);">Apliko me mesazh</p>
+        </div>
+        <div class="stat" style="background:rgba(255,255,255,0.05); border-color:rgba(255,255,255,0.1);">
+          <strong style="color:white;">{{ stats.completedRequests|default:0 }}</strong>
+          <h2 style="color:rgba(77, 124, 255, 0.9);">Historitë e suksesit</h2>
+          <p class="muted" style="color:rgba(255,255,255,0.85);">Historitë që frymëzojnë</p>
+        </div>
       </div>
-    </div>
+    </section>
 
-    <div class="card">
-      <h3>Zbulo thirrjet e hapura</h3>
-      <p class="muted">Shiko thirrjet më të fundit nga komuniteti.</p>
-      <a href="/requests/open/" class="pill" style="padding:10px 14px;">Shko te thirrjet</a>
-    </div>
+    <section style="margin:4rem 0;">
+      <div class="section-label">
+        <div class="section-label-dot"></div>
+        <span class="section-label-text">Si funksionon</span>
+      </div>
+      <h2>Procesi i thjeshtë në 4 hapa</h2>
+      <div class="section-grid">
+        <div class="feature-card" style="animation: slideIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.1s backwards;">
+          <strong style="color:var(--accent); font-size:1.5rem;">01</strong>
+          <h4 style="margin:1rem 0 0.5rem; color:var(--foreground);">Krijo thirrje</h4>
+          <p class="muted">Përshkruaj nevojën, vendndodhjen dhe publikoje menjëherë në platformën tonë.</p>
+        </div>
+        <div class="feature-card" style="animation: slideIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.2s backwards;">
+          <strong style="color:var(--accent); font-size:1.5rem;">02</strong>
+          <h4 style="margin:1rem 0 0.5rem; color:var(--foreground);">Apliko</h4>
+          <p class="muted">Vullnetarët dërgojnë mesazh me disponueshmërinë e tyre dhe përvojën përkatëse.</p>
+        </div>
+        <div class="feature-card" style="animation: slideIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.3s backwards;">
+          <strong style="color:var(--accent); font-size:1.5rem;">03</strong>
+          <h4 style="margin:1rem 0 0.5rem; color:var(--foreground);">Menaxho</h4>
+          <p class="muted">Prano ose refuzo aplikime me një klik dhe komuniko direkt me vullnetarët.</p>
+        </div>
+        <div class="feature-card" style="animation: slideIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.4s backwards;">
+          <strong style="color:var(--accent); font-size:1.5rem;">04</strong>
+          <h4 style="margin:1rem 0 0.5rem; color:var(--foreground);">Mbyll</h4>
+          <p class="muted">Shënoje si të përfunduar, vlerëso reciprokisht dhe bashkëpuno sërish!</p>
+        </div>
+      </div>
+    </section>
 
-    <div class="card">
-      <h3>Artikuj nga blogu</h3>
-      <div class="blog-grid">
+    <section style="margin:4rem 0;">
+      <div class="section-label">
+        <div class="section-label-dot"></div>
+        <span class="section-label-text">Shpërblime</span>
+      </div>
+      <h2>Sistemi i Pikëve & Vlerësimeve</h2>
+      <div class="section-grid">
+        <div class="card-featured">
+          <strong style="font-size:3rem; color:var(--accent);">🏆</strong>
+          <h4 style="margin:1rem 0; color:var(--foreground);">Pikë</h4>
+          <p class="muted">Fito pikë për çdo thirrje të përfunduar me sukses. Më shumë pikë = status më i lartë në komunitet.</p>
+        </div>
+        <div class="card-featured">
+          <strong style="font-size:3rem; color:var(--accent);">⭐</strong>
+          <h4 style="margin:1rem 0; color:var(--foreground);">Vlerësime</h4>
+          <p class="muted">Merr 1–5 yje nga pronari i thirrjes ose vullnetari. Ndiko në reputacionin tënd në platformë.</p>
+        </div>
+        <div class="card-featured">
+          <strong style="font-size:3rem; color:var(--accent);">📊</strong>
+          <h4 style="margin:1rem 0; color:var(--foreground);">Leaderboard</h4>
+          <p class="muted">Ngjitu në krye të komunitetit. Shfaq aftësitë e tua dhe bëhu anëtar elite i Vullnet.</p>
+        </div>
+      </div>
+    </section>
+
+    <section style="margin:4rem 0;">
+      <div class="section-label" style="margin-bottom:2rem;">
+        <div class="section-label-dot"></div>
+        <span class="section-label-text">Blog</span>
+      </div>
+      <h2 style="margin-bottom:3rem;">Artikuj nga blogu</h2>
+      <div class="section-grid">
         {% for post in posts %}
-          <div class="blog-card">
+          <div class="card-featured" style="overflow:hidden; display:flex; flex-direction:column;">
             {% if post.coverImageUrl %}
-              <img src="{{ post.coverImageUrl }}" alt="{{ post.title }}">
+              <img src="{{ post.coverImageUrl }}" alt="{{ post.title }}" style="width:100%; height:180px; object-fit:cover; border-radius:12px; margin-bottom:1.5rem; flex-shrink:0;">
             {% endif %}
-            <div class="blog-card-body">
-              <div class="blog-meta">{{ post.authorName|default:"Stafi Vullnet" }} • {{ post.createdAt|default:"" }}</div>
-              <h4 style="margin:0;">{{ post.title }}</h4>
-              <p class="muted">{{ post.summary }}</p>
-              <div class="blog-actions">
-                <a href="/blog/{{ post.slug|default:post.id }}/" class="pill">Lexo</a>
-              </div>
-            </div>
+            <h4 style="margin:0 0 0.75rem; color:var(--foreground); flex-grow:1;">{{ post.title }}</h4>
+            <p class="muted" style="font-size:0.85rem; margin-bottom:1rem; color:rgba(0,0,0,0.6);">{{ post.authorName|default:"Stafi Vullnet" }} • {{ post.createdAt|date:"d M Y"|default:"" }}</p>
+            <p class="muted" style="margin-bottom:1.5rem; flex-grow:1; color:rgba(0,0,0,0.7); line-height:1.5;">{{ post.summary }}</p>
+            <a href="/blog/{{ post.slug|default:post.id }}/" class="pill" style="align-self:flex-start;">Lexo artikullin →</a>
           </div>
         {% empty %}
-          <p class="muted">Artikujt e fundit do të shfaqen këtu.</p>
+          <div class="empty-state">
+            <div class="empty-state-icon">📝</div>
+            <div class="empty-state-title">Artikujt e fundit</div>
+            <p class="muted">Artikujt e fundit do të shfaqen këtu.</p>
+          </div>
         {% endfor %}
       </div>
-      <div style="margin-top:12px;">
-        <a href="/blog/" class="pill" style="padding:10px 14px;">Lexo artikujt</a>
+      <div style="text-align:center; margin-top:3rem;">
+        <a href="/blog/" class="btn-primary">Shfleto të gjithë artikujt</a>
       </div>
-    </div>
+    </section>
 
-    <div class="card">
-      <h3>Dëshmitë</h3>
+    <!-- Testimonials Section (Inverted) -->
+    <section class="inverted inverted-center" style="margin:4rem -2rem 0; padding:3rem 2rem;">
+      <div class="section-label" style="margin-bottom:2rem;">
+        <div class="section-label-dot"></div>
+        <span class="section-label-text">Dëshmitë</span>
+      </div>
+      <h2 style="color:white; margin-bottom:2.5rem;">Ajo që thonë anëtarët rreth nesh</h2>
       <div class="section-grid">
-        <div class="testimonial">
-          <p>“Gjeta vullnetarë për 1 orë, proces i thjeshtë.”</p>
-          <p class="author">— Ardit, krijues thirrjesh</p>
+        <div style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.1); padding:2rem; border-radius:12px;">
+          <p style="font-size:1.1rem; color:white; margin-bottom:1.5rem; font-style:italic;">"Gjeta vullnetarë brenda 1 ore. Procesi ishte i thjeshtë dhe i shpejtë!"</p>
+          <p style="color:rgba(77, 124, 255, 0.9); font-weight:700;">Ardit K.</p>
+          <p class="muted" style="color:rgba(255,255,255,0.7); font-size:0.9rem;">Krijues thirrjesh</p>
         </div>
-        <div class="testimonial">
-          <p>“Aplikova shpejt dhe pranimi ishte i menjëhershëm.”</p>
-          <p class="author">— Bleona, vullnetare</p>
+        <div style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.1); padding:2rem; border-radius:12px;">
+          <p style="font-size:1.1rem; color:white; margin-bottom:1.5rem; font-style:italic;">"Aplikova shpejt dhe pranimi ishte i menjëhershëm. Shumë e rekomandueshme!"</p>
+          <p style="color:rgba(77, 124, 255, 0.9); font-weight:700;">Bleona M.</p>
+          <p class="muted" style="color:rgba(255,255,255,0.7); font-size:0.9rem;">Vullnetare aktive</p>
         </div>
-        <div class="testimonial">
-          <p>“Menaxhimi i aplikimeve është i qartë dhe i lehtë.”</p>
-          <p class="author">— Mentor, organizator</p>
+        <div style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.1); padding:2rem; border-radius:12px;">
+          <p style="font-size:1.1rem; color:white; margin-bottom:1.5rem; font-style:italic;">"Menaxhimi i aplikimeve është i qartë dhe ndërfaqja është intuitive. Perfekte për organizata."</p>
+          <p style="color:rgba(77, 124, 255, 0.9); font-weight:700;">Mentor P.</p>
+          <p class="muted" style="color:rgba(255,255,255,0.7); font-size:0.9rem;">Organizator</p>
         </div>
       </div>
-    </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section style="margin:4rem 0; text-align:center;">
+      <h2 style="margin-bottom:1.5rem;">Gati për të filluar?</h2>
+      <p style="font-size:1.1rem; color:var(--muted-foreground); margin-bottom:2rem; max-width:600px; margin-left:auto; margin-right:auto;">
+        Bashkohu me komunitetin Vullnet sot dhe fillo të ndihmosh ose të kërkosh vullnetarë për projektet e tua.
+      </p>
+      <div style="display:flex; gap:1rem; flex-wrap:wrap; justify-content:center;">
+        <a href="/requests/?tab=open#active-requests" class="btn-primary">Shfleto thirrjet</a>
+        <a href="/register/" class="btn-secondary">Regjistrohu falas</a>
+      </div>
+    </section>
   </main>
 
   <footer class="footer">
-    <div style="display:flex; justify-content:center; gap:18px; flex-wrap:wrap; align-items:center;">
+    <div class="footer-content">
+      <div class="footer-section">
+        <h4>Kompania</h4>
+        <a href="/about/">Rreth nesh</a>
+        <a href="/blog/">Blog</a>
+        <a href="/contact/">Kontakti</a>
+      </div>
+      <div class="footer-section">
+        <h4>Mbështetje</h4>
+        <a href="/help/">Ndihma</a>
+        <a href="/faq/">Pyetje të shpeshta</a>
+        <a href="/feedback/">Opinionet</a>
+      </div>
+      <div class="footer-section">
+        <h4>Ligjore</h4>
+        <a href="/privacy/">Privatësia</a>
+        <a href="/terms/">Kushtet e përdorimit</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
       <span>© {% now "Y" %} Vullnet</span>
       <span>Ndihmë për komunitetin • Pikë & vlerësime</span>
-      <a href="/about/">Rreth nesh</a>
-      <a href="/blog/">Blog</a>
-      <a href="/requests/open/">Thirrje të hapura</a>
-      <a href="/register/">Krijo llogari</a>
+      <div class="social-links">
+        <a href="https://twitter.com" title="Twitter">𝕏</a>
+        <a href="https://github.com" title="GitHub">⚙️</a>
+        <a href="https://facebook.com" title="Facebook">f</a>
+      </div>
     </div>
   </footer>
+
+  <script>
+    (function() {
+      const toggle = document.getElementById('menu-toggle');
+      const menu = document.getElementById('nav-menu');
+      if (toggle && menu) {
+        toggle.addEventListener('click', () => menu.classList.toggle('active'));
+        menu.querySelectorAll('a').forEach(link => {
+          link.addEventListener('click', () => menu.classList.remove('active'));
+        });
+      }
+    })();
+  </script>
+
+  {% if request.session.user %}
+  <script>
+    (function() {
+      const notifToggle = document.getElementById('notif-toggle');
+      const notifPanel = document.getElementById('notif-panel');
+      const notifList = document.getElementById('notif-list');
+      const notifBadge = document.getElementById('notif-badge');
+      const moreToggle = document.querySelector('.nav-more-toggle');
+      const moreMenu = document.querySelector('.nav-more-menu');
+      const token = "{{ request.session.token|default:'' }}";
+      let notifLoaded = false;
+      const updateBadge = async () => {
+        if (!token || !notifBadge) return;
+        try {
+          const url = (window.API_BASE_URL || "http://localhost:8080").replace(/\/+$/,'') + "/api/notifications/unread-count";
+          const res = await fetch(url, { headers: { "Authorization": "Bearer " + token } });
+          const data = res.ok ? await res.json() : { count: 0 };
+          const count = data.count || 0;
+          if (count > 0) {
+            notifBadge.textContent = count > 9 ? "9+" : String(count);
+            notifBadge.classList.add('show');
+          } else {
+            notifBadge.textContent = "";
+            notifBadge.classList.remove('show');
+          }
+        } catch (err) {
+          notifBadge.textContent = "";
+          notifBadge.classList.remove('show');
+        }
+      };
+      const closeNotifs = (e) => {
+        if (!notifPanel || !notifToggle) return;
+        if (notifPanel.contains(e.target) || notifToggle.contains(e.target)) return;
+        notifPanel.classList.remove('open');
+        notifPanel.setAttribute('aria-hidden', 'true');
+      };
+      if (notifToggle && notifPanel) {
+        notifToggle.addEventListener('click', async () => {
+          notifPanel.classList.toggle('open');
+          const isOpen = notifPanel.classList.contains('open');
+          notifPanel.setAttribute('aria-hidden', String(!isOpen));
+          if (isOpen && !notifLoaded && token) {
+            try {
+              const url = (window.API_BASE_URL || "http://localhost:8080").replace(/\/+$/,'') + "/api/notifications?page=0&size=8";
+              const res = await fetch(url, { headers: { "Authorization": "Bearer " + token } });
+              const data = res.ok ? await res.json() : { content: [] };
+              const items = data.content || [];
+              notifList.innerHTML = "";
+              if (!items.length) {
+                notifList.innerHTML = '<p class="muted">Nuk ka njoftime ende.</p>';
+              } else {
+                items.forEach(n => {
+                  const isUnread = !n.read;
+                  const type = (n.type || '').toUpperCase();
+                  const emoji = type === 'APPLICATION' ? '📝' : (type === 'REQUEST_STATUS' ? '✅' : '📣');
+                  const link = n.link ? `<a href="${n.link}">${emoji} ${n.title}</a>` : `${emoji} ${n.title}`;
+                  const body = n.body ? `<p class="muted">${n.body}</p>` : "";
+                  notifList.insertAdjacentHTML("beforeend",
+                    `<div class="notif-item ${isUnread ? "unread" : ""}" data-id="${n.id}">
+                       <span class="notif-type">${emoji} ${n.type || 'Njoftim'}</span>
+                       <div class="notif-main">
+                         <strong>${link}</strong>
+                         ${body}
+                       </div>
+                     </div>`
+                  );
+                });
+              }
+              notifLoaded = true;
+              notifList.querySelectorAll('.notif-item').forEach(item => {
+                item.addEventListener('click', async () => {
+                  const id = item.getAttribute('data-id');
+                  if (!id || item.classList.contains('read')) return;
+                  try {
+                    const url = (window.API_BASE_URL || "http://localhost:8080").replace(/\/+$/,'') + "/api/notifications/" + id + "/read";
+                    await fetch(url, { method: 'PATCH', headers: { "Authorization": "Bearer " + token } });
+                    item.classList.remove('unread');
+                    item.classList.add('read');
+                    updateBadge();
+                  } catch (err) {
+                    // ignore
+                  }
+                });
+              });
+            } catch (err) {
+              notifList.innerHTML = '<p class="muted">Ngarkimi dështoi.</p>';
+            }
+          }
+        });
+        document.addEventListener('click', closeNotifs);
+      }
+      if (moreToggle && moreMenu) {
+        moreToggle.addEventListener('click', (e) => {
+          e.stopPropagation();
+          moreMenu.classList.toggle('open');
+        });
+        document.addEventListener('click', () => moreMenu.classList.remove('open'));
+      }
+      updateBadge();
+    })();
+  </script>
+  {% endif %}
 </body>
 </html>
