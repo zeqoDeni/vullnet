@@ -1,88 +1,60 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="card request-search-card">
-  <div class="section-head">
+<section class="card requests-hero">
+  <div class="requests-hero-head">
     <div>
-      <p class="eyebrow">Kërko thirrje</p>
-      <h2>Filtro thirrjet ekzistuese</h2>
-      <p class="muted">Gjej shpejt sipas titullit, vendit ose përshkrimit.</p>
+      <p class="eyebrow">Thirrje & kërkime</p>
+      <h1>Gjej ose publiko thirrje</h1>
+      <p class="muted">Shfleto thirrjet, filtro sipas nevojave dhe publiko një kërkesë të re për ndihmë.</p>
+    </div>
+    <div class="requests-hero-actions">
+      <a class="btn-primary" href="#request-create-form">Krijo thirrje</a>
+      <a class="btn-secondary" href="/requests/?tab=open#active-requests">Shfleto të hapurat</a>
     </div>
   </div>
-  <form method="get" class="request-search" action="#active-requests">
+
+  <div class="requests-stats">
+    <div class="requests-stat">
+      <span class="label">Të gjitha</span>
+      <strong>{{ all_count|default:0 }}</strong>
+    </div>
+    <div class="requests-stat">
+      <span class="label">Të hapura</span>
+      <strong>{{ open_count|default:0 }}</strong>
+    </div>
+    <div class="requests-stat">
+      <span class="label">Të miat</span>
+      <strong>{{ mine_count|default:0 }}</strong>
+    </div>
+  </div>
+
+  <form method="get" class="request-search request-search--hero" action="#active-requests">
     <input type="text" name="q" placeholder="Kërko sipas titullit, vendit ose tekstit" value="{{ q|default:'' }}">
     <input type="hidden" name="tab" value="{{ tab|default:'all' }}">
-    <button type="submit" class="pill">Filtro</button>
+    <button type="submit" class="btn-primary">Filtro</button>
   </form>
-</div>
 
-<div class="request-tabs">
-  <a class="request-tab {% if tab == 'all' %}active{% endif %}" href="/requests/?tab=all{% if q %}&q={{ q }}{% endif %}#active-requests">
-    Të gjitha
-    <span class="tab-count">{{ all_count|default:0 }}</span>
-  </a>
-  <a class="request-tab {% if tab == 'open' %}active{% endif %}" href="/requests/?tab=open{% if q %}&q={{ q }}{% endif %}#active-requests">
-    Të hapura
-    <span class="tab-count">{{ open_count|default:0 }}</span>
-  </a>
-  <a class="request-tab {% if tab == 'mine' %}active{% endif %}" href="/requests/?tab=mine{% if q %}&q={{ q }}{% endif %}#active-requests">
-    Të miat
-    {% if mine_count is not None %}
-      <span class="tab-count">{{ mine_count }}</span>
-    {% endif %}
-  </a>
-</div>
-
-<div class="card request-create">
-  <div class="section-head">
-    <div>
-      <p class="eyebrow">Krijo thirrje</p>
-      <h1>Publiko një thirrje për ndihmë</h1>
-      <p class="muted">Shkruaj qartë çfarë të duhet dhe ku ndodhet kërkesa.</p>
-    </div>
+  <div class="request-tabs">
+    <a class="request-tab {% if tab == 'all' %}active{% endif %}" href="/requests/?tab=all{% if q %}&q={{ q }}{% endif %}#active-requests">
+      Të gjitha
+      <span class="tab-count">{{ all_count|default:0 }}</span>
+    </a>
+    <a class="request-tab {% if tab == 'open' %}active{% endif %}" href="/requests/?tab=open{% if q %}&q={{ q }}{% endif %}#active-requests">
+      Të hapura
+      <span class="tab-count">{{ open_count|default:0 }}</span>
+    </a>
+    <a class="request-tab {% if tab == 'mine' %}active{% endif %}" href="/requests/?tab=mine{% if q %}&q={{ q }}{% endif %}#active-requests">
+      Të miat
+      {% if mine_count is not None %}
+        <span class="tab-count">{{ mine_count }}</span>
+      {% endif %}
+    </a>
   </div>
+</section>
 
-  <form method="post" enctype="multipart/form-data" id="request-create-form" class="request-form">
-    {% csrf_token %}
-    <div class="form-grid">
-      <div class="form-field">
-        <label for="id_title">Titulli</label>
-        {{ form.title }}
-      </div>
-      <div class="form-field">
-        <label for="id_location">Vendndodhja</label>
-        {{ form.location }}
-      </div>
-    </div>
-
-    <div class="form-field">
-      <label for="id_description">Përshkrimi</label>
-      {{ form.description }}
-      <p class="muted">Shto sa më shumë detaje, që vullnetarët ta kuptojnë menjëherë.</p>
-    </div>
-
-    <input type="hidden" name="imageUrl" id="request-image-url">
-    <div class="upload-card" id="request-upload-card">
-      <div class="upload-info">
-        <h4>Foto e thirrjes</h4>
-        <p class="muted">Opsionale. Një foto e qartë e bën situatën më të kuptueshme.</p>
-      </div>
-      <div class="upload-actions">
-        <input type="file" id="request-image-file" accept="image/*">
-        <span class="upload-status muted" id="request-image-status">Zgjidh një foto për ngarkim automatik</span>
-      </div>
-      <div class="upload-preview" id="request-image-preview">
-        <span class="muted">Pamja paraprake shfaqet këtu</span>
-      </div>
-    </div>
-
-    <div class="form-actions">
-      <button type="submit" class="btn-primary">Krijo thirrjen</button>
-      <span class="muted">Do të shfaqet menjëherë për vullnetarët.</span>
-    </div>
-  </form>
-</div>
-
-<div class="card" id="active-requests">
+<div class="requests-layout">
+  <div class="requests-main">
+    <div class="card" id="active-requests">
   <div class="section-head">
     <div>
       <p class="eyebrow">Thirrjet aktive</p>
@@ -90,69 +62,124 @@
       <p class="muted">Menaxho statusin, shiko aplikimet dhe ndiq progresin.</p>
     </div>
   </div>
-  {% if requests %}
-  <div class="card-grid">
-    {% for r in requests %}
-    <div class="request-card">
-      {% if r.imageUrl %}
-        <img src="{{ r.imageUrl }}" alt="foto">
+      {% if requests %}
+      <div class="card-grid">
+        {% for r in requests %}
+        <div class="request-card">
+          {% if r.imageUrl %}
+            <img src="{{ r.imageUrl }}" alt="foto">
+          {% else %}
+            <div class="request-image-fallback">📸</div>
+          {% endif %}
+          <div class="request-card-body">
+            <div class="request-card-top">
+              <div class="request-id">#{{ r.id }}</div>
+              <span class="status-pill" data-status="{{ r.status }}">{{ r.status }}</span>
+            </div>
+            <h4 class="request-title"><a href="/requests/{{ r.id }}/">{{ r.title }}</a></h4>
+            <div class="request-meta">
+              <span class="request-meta-item">📍 {{ r.location }}</span>
+              <span class="request-meta-item">👤 <a href="/profiles/{{ r.ownerId }}/">{{ r.ownerName }}</a></span>
+              {% if r.acceptedVolunteerId %}
+                <span class="request-meta-item">✅ <a href="/profiles/{{ r.acceptedVolunteerId }}/">{{ r.acceptedVolunteerName }}</a></span>
+              {% else %}
+                <span class="request-meta-item">⏳ Pa vullnetar</span>
+              {% endif %}
+            </div>
+            <div class="chip-row request-card-actions">
+              <a class="chip link" href="/requests/{{ r.id }}/">Detajet</a>
+              {% if request.session.user.id != r.ownerId %}
+                <a class="chip" href="/requests/{{ r.id }}/#apply">Apliko</a>
+              {% endif %}
+            </div>
+            <div class="request-owner-actions">
+              {% if request.session.user.id == r.ownerId %}
+                {% if r.status == "IN_PROGRESS" %}
+                  <form method="post" action="/requests/{{ r.id }}/complete/">
+                    {% csrf_token %}
+                    <button type="submit">✅ Përfundo</button>
+                  </form>
+                {% endif %}
+                {% if r.status != "CANCELLED" and r.status != "COMPLETED" %}
+                  <form method="post" action="/requests/{{ r.id }}/cancel/">
+                    {% csrf_token %}
+                    <button type="submit" class="ghost-btn">❌ Anulo</button>
+                  </form>
+                {% endif %}
+              {% else %}
+                <span class="muted">Vetëm pronari ka veprime</span>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
       {% else %}
-        <div class="request-image-fallback">📸</div>
-      {% endif %}
-      <div class="request-card-body">
-        <div class="request-card-top">
-          <div class="request-id">#{{ r.id }}</div>
-          <span class="status-pill" data-status="{{ r.status }}">{{ r.status }}</span>
-        </div>
-        <h4 class="request-title"><a href="/requests/{{ r.id }}/">{{ r.title }}</a></h4>
-        <div class="request-meta">
-          <span class="request-meta-item">📍 {{ r.location }}</span>
-          <span class="request-meta-item">👤 <a href="/profiles/{{ r.ownerId }}/">{{ r.ownerName }}</a></span>
-          {% if r.acceptedVolunteerId %}
-            <span class="request-meta-item">✅ <a href="/profiles/{{ r.acceptedVolunteerId }}/">{{ r.acceptedVolunteerName }}</a></span>
-          {% else %}
-            <span class="request-meta-item">⏳ Pa vullnetar</span>
-          {% endif %}
-        </div>
-        <div class="chip-row request-card-actions">
-          <a class="chip link" href="/requests/{{ r.id }}/">Detajet</a>
-          {% if request.session.user.id != r.ownerId %}
-            <a class="chip" href="/requests/{{ r.id }}/#apply">Apliko</a>
-          {% endif %}
-        </div>
-        <div class="request-owner-actions">
-          {% if request.session.user.id == r.ownerId %}
-            {% if r.status == "IN_PROGRESS" %}
-              <form method="post" action="/requests/{{ r.id }}/complete/">
-                {% csrf_token %}
-                <button type="submit">✅ Përfundo</button>
-              </form>
-            {% endif %}
-            {% if r.status != "CANCELLED" and r.status != "COMPLETED" %}
-              <form method="post" action="/requests/{{ r.id }}/cancel/">
-                {% csrf_token %}
-                <button type="submit" class="ghost-btn">❌ Anulo</button>
-              </form>
-            {% endif %}
-          {% else %}
-            <span class="muted">Vetëm pronari ka veprime</span>
-          {% endif %}
+      <div class="empty-state">
+        <span class="empty-state-icon">📭</span>
+        <h3>Nuk ka thirrje</h3>
+        <p class="muted">Krijo thirrjen e parë ose shfleto thirrjet e hapura.</p>
+        <div class="form-actions" style="margin-top:12px;">
+          <button type="submit" form="request-create-form" class="btn-primary">Krijo thirrje</button>
+          <a class="btn-secondary" href="/requests/?tab=open#active-requests">Shfleto të hapurat</a>
         </div>
       </div>
-    </div>
-    {% endfor %}
-  </div>
-  {% else %}
-  <div class="empty-state">
-    <span class="empty-state-icon">📭</span>
-    <h3>Nuk ka thirrje</h3>
-    <p class="muted">Krijo thirrjen e parë ose shfleto thirrjet e hapura.</p>
-    <div class="form-actions" style="margin-top:12px;">
-      <button type="submit" form="request-create-form" class="btn-primary">Krijo thirrje</button>
-      <a class="btn-secondary" href="/requests/?tab=open#active-requests">Shfleto të hapurat</a>
+      {% endif %}
     </div>
   </div>
-  {% endif %}
+
+  <aside class="requests-side">
+    <div class="card request-create">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Krijo thirrje</p>
+          <h2>Publiko një thirrje për ndihmë</h2>
+          <p class="muted">Shkruaj qartë çfarë të duhet dhe ku ndodhet kërkesa.</p>
+        </div>
+      </div>
+
+      <form method="post" enctype="multipart/form-data" id="request-create-form" class="request-form">
+        {% csrf_token %}
+        <div class="form-grid">
+          <div class="form-field">
+            <label for="id_title">Titulli</label>
+            {{ form.title }}
+          </div>
+          <div class="form-field">
+            <label for="id_location">Vendndodhja</label>
+            {{ form.location }}
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label for="id_description">Përshkrimi</label>
+          {{ form.description }}
+          <p class="muted">Shto sa më shumë detaje, që vullnetarët ta kuptojnë menjëherë.</p>
+        </div>
+
+        <input type="hidden" name="imageUrl" id="request-image-url">
+        <div class="upload-card" id="request-upload-card">
+          <div class="upload-info">
+            <h4>Foto e thirrjes</h4>
+            <p class="muted">Opsionale. Një foto e qartë e bën situatën më të kuptueshme.</p>
+          </div>
+          <div class="upload-actions">
+            <input type="file" id="request-image-file" accept="image/*">
+            <span class="upload-status muted" id="request-image-status">Zgjidh një foto për ngarkim automatik</span>
+          </div>
+          <div class="upload-preview" id="request-image-preview">
+            <span class="muted">Pamja paraprake shfaqet këtu</span>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn-primary">Krijo thirrjen</button>
+          <span class="muted">Do të shfaqet menjëherë për vullnetarët.</span>
+        </div>
+      </form>
+    </div>
+  </aside>
+</div>
 
 <script>
   (function(){
