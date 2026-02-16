@@ -11,4 +11,5 @@ public interface ApplicationRepo  extends JpaRepository<Application, Long> {
     boolean existsByHelpRequestIdAndApplicantId(Long helpRequestId, Long applicantId);
     Page<Application> findByHelpRequestId(Long helpRequestId, Pageable pageable);
     Page<Application> findByApplicantId(Long applicantId, Pageable pageable);
+    void deleteByHelpRequestId(Long helpRequestId);
 }

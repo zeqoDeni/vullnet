@@ -1,4 +1,5 @@
 from django.urls import path
+from django.views.generic import RedirectView
 from . import views
 
 urlpatterns = [
@@ -7,15 +8,22 @@ urlpatterns = [
     path("register/", views.register_view, name="register"),
     path("logout/", views.logout_view, name="logout"),
     path("dashboard/", views.dashboard, name="dashboard"),
+    path("notifications/", views.notifications_view, name="notifications"),
     path("profile/", views.profile, name="profile"),
     path("admin-dashboard/", views.admin_dashboard, name="admin_dashboard"),
     path("admin-dashboard/users/<int:user_id>/role/", views.update_role, name="update_role"),
     path("admin-dashboard/users/<int:user_id>/status/", views.update_status, name="update_status"),
+    path("admin-dashboard/requests/<int:request_id>/delete/", views.admin_delete_request, name="admin_delete_request"),
+    path("admin-dashboard/notifications/broadcast/", views.admin_broadcast_notification, name="admin_broadcast_notification"),
     path("admin-dashboard/blogs/create/", views.create_blog, name="create_blog"),
     path("admin-dashboard/blogs/<int:blog_id>/update/", views.update_blog, name="update_blog"),
     path("admin-dashboard/blogs/<int:blog_id>/delete/", views.delete_blog, name="delete_blog"),
     path("requests/", views.requests_list, name="requests"),
-    path("requests/open/", views.open_requests, name="open_requests"),
+    path(
+        "requests/open/",
+        RedirectView.as_view(url="/requests/?tab=open#active-requests", permanent=False),
+        name="open_requests",
+    ),
     path("requests/<int:request_id>/", views.request_detail, name="request_detail"),
     path("applications/", views.my_applications, name="my_applications"),
     path("applications/<int:application_id>/accept/", views.accept_application, name="accept_application"),
@@ -27,4 +35,10 @@ urlpatterns = [
     path("blog/<slug:post_id>/", views.blog_detail, name="blog_detail"),
     path("profiles/<int:user_id>/", views.profile_public, name="profile_public"),
     path("about/", views.about, name="about"),
+    path("contact/", views.contact, name="contact"),
+    path("help/", views.help_page, name="help"),
+    path("faq/", views.faq, name="faq"),
+    path("feedback/", views.feedback, name="feedback"),
+    path("privacy/", views.privacy, name="privacy"),
+    path("terms/", views.terms, name="terms"),
 ]

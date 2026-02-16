@@ -160,6 +160,12 @@ def cancel_request(token, request_id):
         headers=_headers(token),
     )
 
+def delete_request(token, request_id):
+    return requests.delete(
+        f"{settings.API_BASE_URL}/api/requests/{request_id}",
+        headers=_headers(token),
+    )
+
 
 def create_review(token, request_id, data):
     return requests.post(
@@ -218,6 +224,39 @@ def get_admin_blogs(token, params=None):
         headers=_headers(token),
         params=params,
     )
+
+
+def get_notifications(token, params=None):
+    return requests.get(
+        f"{settings.API_BASE_URL}/api/notifications",
+        headers=_headers(token),
+        params=params,
+    )
+
+
+def mark_notification_read(token, notification_id):
+    return requests.patch(
+        f"{settings.API_BASE_URL}/api/notifications/{notification_id}/read",
+        headers=_headers(token),
+    )
+
+
+def get_unread_notification_count(token):
+    return requests.get(
+        f"{settings.API_BASE_URL}/api/notifications/unread-count",
+        headers=_headers(token),
+    )
+
+def broadcast_notification(token, payload):
+    return requests.post(
+        f"{settings.API_BASE_URL}/api/notifications/broadcast",
+        headers=_headers(token),
+        json=payload,
+    )
+
+
+def get_public_stats():
+    return requests.get(f"{settings.API_BASE_URL}/api/public/stats")
 
 
 def create_blog(token, data):

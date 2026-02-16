@@ -3,34 +3,76 @@
 <html>
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Vullnet Client</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{% static 'css/style.css' %}">
   <link rel="icon" type="image/svg+xml" href="{% static 'img/favicon.svg' %}">
   <script>
-    window.API_BASE_URL = "{{ settings.API_BASE_URL|default:'http://localhost:8080' }}";
+    (function() {
+      const apiBase = "{{ api_base_url|default:'' }}".trim();
+      window.API_BASE_URL = apiBase || window.location.origin;
+    })();
+    
+    // Disable right-click context menu
+    document.addEventListener('contextmenu', function(e) {
+      e.preventDefault();
+      return false;
+    });
   </script>
 </head>
 <body>
   <header class="site-header">
     <div class="brand"><a href="/" style="color:inherit; text-decoration:none;">Vullnet</a></div>
-    <nav class="nav-links">
-      <a href="/dashboard/">Paneli</a>
-      <a href="/profile/">Profili</a>
-      <a href="/requests/">Thirrjet</a>
-      <a href="/requests/open/">Thirrje të hapura</a>
-      <a href="/applications/">Aplikimet e mia</a>
-      <a href="/blog/">Blog</a>
-      <a href="/about/">Rreth nesh</a>
-      {% if request.session.user.role == "ADMIN" %}
-      <a href="/admin-dashboard/">Admin</a>
-      {% endif %}
-      <a href="/logout/">Dil</a>
+    <nav class="nav-links" id="nav-menu">
+      <div class="nav-group">
+        <a href="/dashboard/">Paneli</a>
+        <a href="/requests/">Thirrjet</a>
+        <a href="/applications/">Aplikimet</a>
+        <div class="nav-more">
+          <button type="button" class="nav-more-toggle">Më shumë</button>
+          <div class="nav-more-menu">
+            <a href="/blog/">Blog</a>
+            <a href="/about/">Rreth nesh</a>
+            {% if request.session.user.role == "ADMIN" %}
+            <a href="/admin-dashboard/">Admin</a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      <div class="nav-actions">
+        {% if request.session.user %}
+        <a class="nav-icon" href="/profile/" aria-label="Profili">🧑</a>
+        {% else %}
+        <a class="nav-icon" href="/login/" aria-label="Hyr">🧑</a>
+        {% endif %}
+        <div class="nav-notifs">
+          <button type="button" class="nav-icon notif-toggle" id="notif-toggle" aria-label="Njoftime">
+            🔔
+            <span class="notif-badge" id="notif-badge" aria-hidden="true"></span>
+          </button>
+          <div class="notif-panel" id="notif-panel" aria-hidden="true">
+            <div class="notif-head">
+              <span>Njoftimet</span>
+              <a href="/notifications/" class="notif-link">Shiko të gjitha</a>
+            </div>
+            <div class="notif-list" id="notif-list">
+              <p class="muted">Duke ngarkuar...</p>
+            </div>
+          </div>
+        </div>
+        <a class="nav-cta icon-cta" href="/requests/#request-create-form" aria-label="Krijo thirrje">+</a>
+        <a class="nav-logout" href="/logout/">Dil</a>
+      </div>
     </nav>
+    <button class="menu-toggle" id="menu-toggle" aria-label="Toggle menu">☰</button>
   </header>
 
   <main class="container">
     {% if messages %}
-      <ul class="messages">
+      <ul class="messages" id="messages">
         {% for message in messages %}
           <li class="{{ message.tags }}">{{ message }}</li>
         {% endfor %}
@@ -39,12 +81,143 @@
     {% block content %}{% endblock %}
   </main>
   <footer class="footer">
-    <div style="display:flex; justify-content:center; gap:18px; flex-wrap:wrap; align-items:center;">
+    <div class="footer-content">
+      <div class="footer-section">
+        <h4>Kompania</h4>
+        <a href="/about/">Rreth nesh</a>
+        <a href="/blog/">Blog</a>
+        <a href="/contact/">Kontakti</a>
+      </div>
+      <div class="footer-section">
+        <h4>Mbështetje</h4>
+        <a href="/help/">Ndihma</a>
+        <a href="/faq/">Pyetje të shpeshta</a>
+        <a href="/feedback/">Opinionet</a>
+      </div>
+      <div class="footer-section">
+        <h4>Ligjore</h4>
+        <a href="/privacy/">Privatësia</a>
+        <a href="/terms/">Kushtet e përdorimit</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
       <span>© {% now "Y" %} Vullnet</span>
       <span>Ndihmë për komunitetin • Pikë & vlerësime</span>
-      <a href="/blog/">Blog</a>
-      <a href="/requests/open/">Thirrje të hapura</a>
+      <div class="social-links">
+        <a href="https://twitter.com" title="Twitter">𝕏</a>
+        <a href="https://github.com" title="GitHub">⚙️</a>
+        <a href="https://facebook.com" title="Facebook">f</a>
+      </div>
     </div>
   </footer>
+
+  <script>
+    (function() {
+      const toggle = document.getElementById('menu-toggle');
+      const menu = document.getElementById('nav-menu');
+      if (toggle && menu) {
+        toggle.addEventListener('click', () => menu.classList.toggle('active'));
+        menu.querySelectorAll('a').forEach(link => {
+          link.addEventListener('click', () => menu.classList.remove('active'));
+        });
+      }
+      const notifToggle = document.getElementById('notif-toggle');
+      const notifPanel = document.getElementById('notif-panel');
+      const notifList = document.getElementById('notif-list');
+      const notifBadge = document.getElementById('notif-badge');
+      const moreToggle = document.querySelector('.nav-more-toggle');
+      const moreMenu = document.querySelector('.nav-more-menu');
+      const token = "{{ request.session.token|default:'' }}";
+      let notifLoaded = false;
+      const updateBadge = async () => {
+        if (!token || !notifBadge) return;
+        try {
+          const url = (window.API_BASE_URL || "http://localhost:8080").replace(/\/+$/,'') + "/api/notifications/unread-count";
+          const res = await fetch(url, { headers: { "Authorization": "Bearer " + token } });
+          const data = res.ok ? await res.json() : { count: 0 };
+          const count = data.count || 0;
+          if (count > 0) {
+            notifBadge.textContent = count > 9 ? "9+" : String(count);
+            notifBadge.classList.add('show');
+          } else {
+            notifBadge.textContent = "";
+            notifBadge.classList.remove('show');
+          }
+        } catch (err) {
+          notifBadge.textContent = "";
+          notifBadge.classList.remove('show');
+        }
+      };
+      const closeNotifs = (e) => {
+        if (!notifPanel || !notifToggle) return;
+        if (notifPanel.contains(e.target) || notifToggle.contains(e.target)) return;
+        notifPanel.classList.remove('open');
+        notifPanel.setAttribute('aria-hidden', 'true');
+      };
+      if (notifToggle && notifPanel) {
+        notifToggle.addEventListener('click', async () => {
+          notifPanel.classList.toggle('open');
+          const isOpen = notifPanel.classList.contains('open');
+          notifPanel.setAttribute('aria-hidden', String(!isOpen));
+          if (isOpen && !notifLoaded && token) {
+            try {
+              const url = (window.API_BASE_URL || "http://localhost:8080").replace(/\/+$/,'') + "/api/notifications?page=0&size=8";
+              const res = await fetch(url, { headers: { "Authorization": "Bearer " + token } });
+              const data = res.ok ? await res.json() : { content: [] };
+              const items = data.content || [];
+              notifList.innerHTML = "";
+              if (!items.length) {
+                notifList.innerHTML = '<p class="muted">Nuk ka njoftime ende.</p>';
+              } else {
+                items.forEach(n => {
+                  const isUnread = !n.read;
+                  const type = (n.type || '').toUpperCase();
+                  const emoji = type === 'APPLICATION' ? '📝' : (type === 'REQUEST_STATUS' ? '✅' : '📣');
+                  const link = n.link ? `<a href="${n.link}">${emoji} ${n.title}</a>` : `${emoji} ${n.title}`;
+                  const body = n.body ? `<p class="muted">${n.body}</p>` : "";
+                  notifList.insertAdjacentHTML("beforeend",
+                    `<div class="notif-item ${isUnread ? "unread" : ""}" data-id="${n.id}">
+                       <span class="notif-type">${emoji} ${n.type || 'Njoftim'}</span>
+                       <div class="notif-main">
+                         <strong>${link}</strong>
+                         ${body}
+                       </div>
+                     </div>`
+                  );
+                });
+              }
+              notifLoaded = true;
+              notifList.querySelectorAll('.notif-item').forEach(item => {
+                item.addEventListener('click', async () => {
+                  const id = item.getAttribute('data-id');
+                  if (!id || item.classList.contains('read')) return;
+                  try {
+                    const url = (window.API_BASE_URL || "http://localhost:8080").replace(/\/+$/,'') + "/api/notifications/" + id + "/read";
+                    await fetch(url, { method: 'PATCH', headers: { "Authorization": "Bearer " + token } });
+                    item.classList.remove('unread');
+                    item.classList.add('read');
+                    updateBadge();
+                  } catch (err) {
+                    // ignore
+                  }
+                });
+              });
+            } catch (err) {
+              notifList.innerHTML = '<p class="muted">Ngarkimi dështoi.</p>';
+            }
+          }
+        });
+        document.addEventListener('click', closeNotifs);
+      }
+      if (moreToggle && moreMenu) {
+        moreToggle.addEventListener('click', (e) => {
+          e.stopPropagation();
+          moreMenu.classList.toggle('open');
+        });
+        document.addEventListener('click', () => moreMenu.classList.remove('open'));
+      }
+      updateBadge();
+    })();
+  </script>
 </body>
 </html>

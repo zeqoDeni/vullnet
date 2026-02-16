@@ -9,6 +9,7 @@ import org.springframework.web.server.ResponseStatusException;
 import org.vullnet.vullnet00.dto.BlogPostRequest;
 import org.vullnet.vullnet00.dto.BlogPostResponse;
 import org.vullnet.vullnet00.model.BlogPost;
+import org.vullnet.vullnet00.model.NotificationType;
 import org.vullnet.vullnet00.model.User;
 import org.vullnet.vullnet00.repo.BlogPostRepo;
 import org.vullnet.vullnet00.repo.UserRepo;
@@ -23,6 +24,7 @@ public class BlogService {
 
     private final BlogPostRepo blogPostRepo;
     private final UserRepo userRepo;
+    private final NotificationService notificationService;
 
     public Page<BlogPostResponse> getPublished(Pageable pageable) {
         return blogPostRepo.findByPublishedTrueOrderByCreatedAtDesc(pageable).map(this::toResponse);
@@ -57,7 +59,16 @@ public class BlogService {
                 .authorName(authorName)
                 .published(Boolean.TRUE.equals(request.getPublished()))
                 .build();
-        return toResponse(blogPostRepo.save(post));
+        BlogPost saved = blogPostRepo.save(post);
+        if (saved.isPublished()) {
+            notificationService.notifyAll(
+                    NotificationType.SYSTEM.name(),
+                    "Artikull i ri",
+                    "U publikua artikulli \"" + saved.getTitle() + "\"",
+                    "/blog/" + saved.getSlug() + "/"
+            );
+        }
+        return toResponse(saved);
     }
 
     public BlogPostResponse update(Long postId, BlogPostRequest request) {
@@ -79,10 +90,20 @@ public class BlogService {
         if (request.getGallery() != null) {
             existing.setGalleryImages(serializeGallery(request.getGallery()));
         }
+        boolean wasPublished = existing.isPublished();
         if (request.getPublished() != null) {
             existing.setPublished(request.getPublished());
         }
-        return toResponse(blogPostRepo.save(existing));
+        BlogPost saved = blogPostRepo.save(existing);
+        if (!wasPublished && saved.isPublished()) {
+            notificationService.notifyAll(
+                    NotificationType.SYSTEM.name(),
+                    "Artikull i ri",
+                    "U publikua artikulli \"" + saved.getTitle() + "\"",
+                    "/blog/" + saved.getSlug() + "/"
+            );
+        }
+        return toResponse(saved);
     }
 
     public void delete(Long postId) {

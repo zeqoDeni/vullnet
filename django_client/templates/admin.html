@@ -9,45 +9,120 @@
     <div class="stat">Aplikime: {{ stats.applications }}</div>
   </div>
   <h3>Përdoruesit</h3>
-  <table>
-    <tr>
-      <th>ID</th>
-      <th>Emri</th>
-      <th>Email</th>
-      <th>Telefon</th>
-      <th>Roli</th>
-      <th>Statusi</th>
-      <th>Ndrysho rolin</th>
-      <th>Aktivo / çaktivo</th>
-    </tr>
-    {% for u in users %}
-    <tr>
-      <td>{{ u.id }}</td>
-      <td><a href="/profiles/{{ u.id }}/">{{ u.firstName }} {{ u.lastName }}</a></td>
-      <td>{{ u.email }}</td>
-      <td>{{ u.phone }}</td>
-      <td><span class="pill">{{ u.role }}</span></td>
-      <td>{% if u.active %}Aktiv{% else %}Çaktiv{% endif %}</td>
-      <td>
-        <form method="post" action="/admin-dashboard/users/{{ u.id }}/role/" style="display:inline;">
-          {% csrf_token %}
-          <select name="role">
-            <option value="USER" {% if u.role == "USER" %}selected{% endif %}>USER</option>
-            <option value="ADMIN" {% if u.role == "ADMIN" %}selected{% endif %}>ADMIN</option>
-          </select>
-          <button type="submit">Ruaj</button>
-        </form>
-      </td>
-      <td>
-        <form method="post" action="/admin-dashboard/users/{{ u.id }}/status/" style="display:inline;">
-          {% csrf_token %}
-          <input type="hidden" name="active" value="{% if u.active %}false{% else %}true{% endif %}">
-          <button type="submit">{% if u.active %}Çaktivizo{% else %}Aktivizo{% endif %}</button>
-        </form>
-      </td>
-    </tr>
-    {% endfor %}
-  </table>
+  <div class="table-scroll">
+    <table>
+      <tr>
+        <th>ID</th>
+        <th>Emri</th>
+        <th>Email</th>
+        <th>Telefon</th>
+        <th>Roli</th>
+        <th>Statusi</th>
+        <th>Ndrysho rolin</th>
+        <th>Aktivizo / çaktivizo</th>
+      </tr>
+      {% for u in users %}
+      <tr>
+        <td>{{ u.id }}</td>
+        <td><a href="/profiles/{{ u.id }}/">{{ u.firstName }} {{ u.lastName }}</a></td>
+        <td>{{ u.email }}</td>
+        <td>{{ u.phone }}</td>
+        <td><span class="pill">{{ u.role }}</span></td>
+        <td>{% if u.active %}Aktiv{% else %}Jo aktiv{% endif %}</td>
+        <td>
+          <form method="post" action="/admin-dashboard/users/{{ u.id }}/role/" style="display:inline;">
+            {% csrf_token %}
+            <select name="role">
+              <option value="USER" {% if u.role == "USER" %}selected{% endif %}>USER</option>
+              <option value="ADMIN" {% if u.role == "ADMIN" %}selected{% endif %}>ADMIN</option>
+            </select>
+            <button type="submit">Ruaj</button>
+          </form>
+        </td>
+        <td>
+          <form method="post" action="/admin-dashboard/users/{{ u.id }}/status/" style="display:inline;">
+            {% csrf_token %}
+            <input type="hidden" name="active" value="{% if u.active %}false{% else %}true{% endif %}">
+            <button type="submit">{% if u.active %}Çaktivizo{% else %}Aktivizo{% endif %}</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+</div>
+
+<div class="card">
+  <h3>Thirrjet (admin)</h3>
+  <p class="muted">Fshije një thirrje nëse është e papërshtatshme ose e rreme.</p>
+  <div class="table-scroll">
+    <table>
+      <tr>
+        <th>ID</th>
+        <th>Titulli</th>
+        <th>Pronari</th>
+        <th>Statusi</th>
+        <th>Veprime</th>
+      </tr>
+      {% for r in requests %}
+      <tr>
+        <td>#{{ r.id }}</td>
+        <td><a href="/requests/{{ r.id }}/">{{ r.title }}</a></td>
+        <td>
+          {% if r.ownerId %}
+            <a href="/profiles/{{ r.ownerId }}/">{{ r.ownerName|default:"Përdorues" }}</a>
+          {% else %}
+            —
+          {% endif %}
+        </td>
+        <td><span class="pill">{{ r.status }}</span></td>
+        <td>
+          <form method="post" action="/admin-dashboard/requests/{{ r.id }}/delete/" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="danger" onclick="return confirm('Je i sigurt që do ta fshish këtë thirrje?');">Fshi</button>
+          </form>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="5" class="muted">Nuk ka thirrje për momentin.</td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+</div>
+
+<div class="card">
+  <h3>Njoftim për të gjithë</h3>
+  <p class="muted">Dërgo një njoftim që shfaqet te të gjithë përdoruesit.</p>
+  <form method="post" action="/admin-dashboard/notifications/broadcast/" class="request-form">
+    {% csrf_token %}
+    <div class="form-grid">
+      <div class="form-field">
+        <label for="broadcast_type">Lloji</label>
+        <select id="broadcast_type" name="type">
+          <option value="SYSTEM">SYSTEM</option>
+          <option value="APPLICATION">APPLICATION</option>
+          <option value="REQUEST_STATUS">REQUEST_STATUS</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label for="broadcast_title">Titulli</label>
+        <input id="broadcast_title" type="text" name="title" placeholder="P.sh. Përditësim i rëndësishëm" required>
+      </div>
+    </div>
+    <div class="form-field">
+      <label for="broadcast_body">Mesazhi</label>
+      <textarea id="broadcast_body" name="body" rows="3" placeholder="Shkruaj përmbajtjen e njoftimit"></textarea>
+    </div>
+    <div class="form-field">
+      <label for="broadcast_link">Link (opsional)</label>
+      <input id="broadcast_link" type="text" name="link" placeholder="/requests/ ose https://...">
+    </div>
+    <div class="form-actions">
+      <button type="submit">Dërgo njoftimin</button>
+    </div>
+  </form>
 </div>
 
 <div id="blog-admin" data-token="{{ token }}" data-api="{{ api_base }}">
@@ -70,7 +145,7 @@
             <button type="button" class="pill upload-cover">Ngarko kopertinë</button>
             <textarea name="gallery" rows="2" placeholder="Galeria (URL me rreshta)">{% if b.gallery %}{{ b.gallery|join:'\n' }}{% endif %}</textarea>
             <input type="file" class="gallery-files" multiple>
-            <button type="button" class="pill upload-gallery">Ngarko galeri</button>
+            <button type="button" class="pill upload-gallery">Ngarko galerinë</button>
             <label><input type="checkbox" name="published" {% if b.published %}checked{% endif %}> Publikuar</label>
             <div class="blog-actions">
               <button type="submit">Ruaj</button>
@@ -88,7 +163,7 @@
     </div>
     <div>
       <h3>Shto artikull</h3>
-      <p class="muted">Kliko butonin për të hapur formularin në popup.</p>
+      <p class="muted">Kliko butonin për të hapur formularin në dritare.</p>
       <button type="button" onclick="document.getElementById('blog-modal').style.display='flex';">Artikull i ri</button>
     </div>
   </div>

@@ -13,12 +13,12 @@
     </div>
     <div>
       <div class="card" style="margin:0; box-shadow:none; border:1px solid var(--border);">
-        <p class="muted">Status: <strong>{{ request_data.status }}</strong></p>
-        <p class="muted">Pronar: <a href="/profiles/{{ request_data.ownerId }}/">{{ request_data.ownerName }}</a></p>
+        <p class="muted">Statusi: <strong>{{ request_data.status }}</strong></p>
+        <p class="muted">Pronari: <a href="/profiles/{{ request_data.ownerId }}/">{{ request_data.ownerName }}</a></p>
         {% if request_data.acceptedVolunteerId %}
           <p>Vullnetari: <a href="/profiles/{{ request_data.acceptedVolunteerId }}/">{{ request_data.acceptedVolunteerName }}</a></p>
         {% else %}
-          <p class="muted">Ende pa vullnetar të pranuar</p>
+          <p class="muted">Ende pa vullnetar të zgjedhur</p>
         {% endif %}
         {% if request_data.acceptedVolunteerId and request_data.status == "IN_PROGRESS" and request.session.user.id == request_data.ownerId %}
           <form method="post" action="/requests/{{ request_id }}/complete/">
@@ -57,15 +57,15 @@
       <td><a href="/profiles/{{ a.applicantId }}/">{{ a.applicantName }}</a> (ID {{ a.applicantId }})</td>
       <td><span class="pill">{{ a.status }}</span></td>
       <td>{{ a.message }}</td>
-      <td>
+      <td class="request-actions-cell">
         {% if request.session.user.id == request_data.ownerId and request_data.status == "OPEN" and a.status == "PENDING" %}
           <form method="post" action="/applications/{{ a.applicationId }}/accept/" style="display:inline;">
             {% csrf_token %}
-            <button type="submit">Prano</button>
+            <button type="submit" class="request-action-btn">Prano</button>
           </form>
           <form method="post" action="/applications/{{ a.applicationId }}/reject/" style="display:inline;">
             {% csrf_token %}
-            <button type="submit">Refuzo</button>
+            <button type="submit" class="request-action-btn">Refuzo</button>
           </form>
         {% else %}
           <span class="muted">S'ka veprim</span>
@@ -91,7 +91,7 @@
 
 {% if request_data.acceptedVolunteerId %}
 <div class="card">
-  <h3>Kontakt i shkurtër</h3>
+  <h3>Kontakt i shpejtë</h3>
   {% if request.session.user.id == request_data.ownerId %}
     <p>Telefon i vullnetarit: {{ request_data.acceptedVolunteerPhone|default:"(i fshehur)" }}</p>
   {% elif request.session.user.id == request_data.acceptedVolunteerId %}

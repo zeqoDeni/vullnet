@@ -18,5 +18,6 @@ public class UserResponse {
     private Integer reviewCount;
     private String phone;
     private java.util.List<String> badges;
+    private String avatarUrl;
 
 }
