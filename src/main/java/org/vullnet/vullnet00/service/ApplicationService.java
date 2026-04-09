@@ -44,7 +44,16 @@ public class ApplicationService {
         Application app = Application.builder().helpRequest(helpRequest).applicant(applicant).status(ApplicationStatus.PENDING).message(req.getMessage()).build();
         notificationService.notifyEmail(helpRequest.getOwner(), "Aplikim i ri", "Ke një aplikim të ri për thirrjen: " + helpRequest.getTitle());
         notificationService.notifySms(helpRequest.getOwner(), "Aplikim i ri për \"" + helpRequest.getTitle() + "\"");
-        return toResponse(applicationRepo.save(app));
+        notificationService.notifyInApp(
+                helpRequest.getOwner(),
+                NotificationType.APPLICATION,
+                "Aplikim i ri",
+                "Ke një aplikim të ri për thirrjen \"" + helpRequest.getTitle() + "\"",
+                "/requests/" + helpRequest.getId() + "/"
+        );
+        Application saved = applicationRepo.save(app);
+        notifyAdminsForNewApplication(saved);
+        return toResponse(saved);
     }
 
     @org.springframework.transaction.annotation.Transactional
@@ -74,6 +83,13 @@ public class ApplicationService {
         helpRequestRepo.save(request);
         notificationService.notifyEmail(app.getApplicant(), "Aplikimi u pranua", "Thirrja \"" + request.getTitle() + "\" ju pranoi.");
         notificationService.notifySms(app.getApplicant(), "Aplikimi u pranua për \"" + request.getTitle() + "\"");
+        notificationService.notifyInApp(
+                app.getApplicant(),
+                NotificationType.APPLICATION,
+                "Aplikimi u pranua",
+                "U pranove për thirrjen \"" + request.getTitle() + "\"",
+                "/requests/" + request.getId() + "/"
+        );
         return toResponse(app);
     }
 
@@ -98,6 +114,13 @@ public class ApplicationService {
         app.setDecidedAt(LocalDateTime.now());
         app.setDecidedById(userId);
         notificationService.notifyEmail(app.getApplicant(), "Aplikimi u refuzua", "Thirrja \"" + request.getTitle() + "\" u refuzua.");
+        notificationService.notifyInApp(
+                app.getApplicant(),
+                NotificationType.APPLICATION,
+                "Aplikimi u refuzua",
+                "Thirrja \"" + request.getTitle() + "\" e refuzoi aplikimin tënd.",
+                "/requests/" + request.getId() + "/"
+        );
         return toResponse(applicationRepo.save(app));
     }
 
@@ -130,6 +153,13 @@ public class ApplicationService {
         if (req != null) {
             notificationService.notifyEmail(req.getOwner(), "Aplikimi u tërhoq", "Përdoruesi e tërhoqi aplikimin për \"" + req.getTitle() + "\"");
             notificationService.notifySms(req.getOwner(), "Aplikimi u tërhoq për \"" + req.getTitle() + "\"");
+            notificationService.notifyInApp(
+                    req.getOwner(),
+                    NotificationType.APPLICATION,
+                    "Aplikimi u tërhoq",
+                    "Aplikimi për \"" + req.getTitle() + "\" u tërhoq.",
+                    "/requests/" + req.getId() + "/"
+            );
         }
         return toResponse(saved);
     }
@@ -144,5 +174,21 @@ public class ApplicationService {
                 .status(app.getStatus() != null ? app.getStatus().name() : null)
                 .message(app.getMessage())
                 .build();
+    }
+
+    private void notifyAdminsForNewApplication(Application app) {
+        HelpRequest request = app.getHelpRequest();
+        String title = request != null ? request.getTitle() : "Thirrje";
+        Long requestId = request != null ? request.getId() : null;
+        String link = requestId != null ? "/requests/" + requestId + "/" : "/requests/";
+        for (User admin : repo.findByRole(Role.ADMIN)) {
+            notificationService.notifyInApp(
+                    admin,
+                    NotificationType.APPLICATION,
+                    "Aplikim i ri",
+                    "U dërgua një aplikim i ri për \"" + title + "\"",
+                    link
+            );
+        }
     }
 }

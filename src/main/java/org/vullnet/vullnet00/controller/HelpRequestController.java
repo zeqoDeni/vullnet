@@ -15,6 +15,7 @@ import org.vullnet.vullnet00.security.UserPrincipal;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.access.AccessDeniedException;
 
 @RestController
 @RequestMapping("/api/requests")
@@ -78,5 +79,25 @@ public class HelpRequestController {
             @PathVariable("id") Long requestId
     ) {
         return helpRequestService.cancel(principal.getId(), requestId);
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteAsAdmin(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @PathVariable("id") Long requestId
+    ) {
+        enforceAdmin(principal);
+        helpRequestService.deleteAsAdmin(requestId);
+    }
+
+    private void enforceAdmin(UserPrincipal principal) {
+        if (principal == null) {
+            throw new AccessDeniedException("E paautorizuar");
+        }
+        if (principal.getAuthorities().stream().anyMatch(auth -> "ROLE_ADMIN".equals(auth.getAuthority()))) {
+            return;
+        }
+        throw new AccessDeniedException("E ndaluar");
     }
 }

@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+  <div class="pill">Kontakti</div>
+  <h1>Na gjej shpejt</h1>
+  <p class="muted">Për pyetje, ide apo bashkëpunime, jemi këtu. Na shkruaj dhe do të kthejmë përgjigje sa më shpejt.</p>
+
+  <div class="section-grid" style="margin-top:1.5rem;">
+    <div class="feature-card">
+      <strong>📧 Email</strong>
+      <p class="muted">info@vullnet.test</p>
+    </div>
+    <div class="feature-card">
+      <strong>☎️ Telefon</strong>
+      <p class="muted">+355 44 000 000</p>
+    </div>
+    <div class="feature-card">
+      <strong>📍 Tirana</strong>
+      <p class="muted">Qendra e komunitetit Vullnet</p>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:1.5rem;">
+    <h3>Na dërgo një mesazh</h3>
+    <p class="muted">Shkruaj shkurt dhe qartë. Do të të kthejmë përgjigje me shumë qejf.</p>
+    <form>
+      <div class="form-grid">
+        <div class="form-field">
+          <label>Emri</label>
+          <input type="text" placeholder="Emri yt">
+        </div>
+        <div class="form-field">
+          <label>Email</label>
+          <input type="email" placeholder="email@shembull.com">
+        </div>
+      </div>
+      <div class="form-field">
+        <label>Mesazhi</label>
+        <textarea rows="4" placeholder="Si mund të ndihmojmë?"></textarea>
+      </div>
+      <button type="button">Dërgo</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

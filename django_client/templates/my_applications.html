@@ -1,29 +1,43 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="card">
-  <h1>Aplikimet e mia</h1>
-  <table>
-    <tr>
-      <th>Thirrja</th>
-      <th>Statusi</th>
-      <th>Veprime</th>
-    </tr>
+<div class="card applications-wrap">
+  <div class="applications-header">
+    <div>
+      <h1>Aplikimet e mia</h1>
+      <p class="muted">Gjithçka që ke dërguar, me status të qartë dhe veprime të shpejta.</p>
+    </div>
+    <a class="btn-secondary" href="/requests/?tab=open#active-requests">Gjej thirrje</a>
+  </div>
+
+  <div class="applications-grid">
     {% for a in applications %}
-    <tr>
-      <td><a href="/requests/{{ a.helpRequestId }}/">Thirrja #{{ a.helpRequestId }}</a></td>
-      <td><span class="pill">{{ a.status }}</span></td>
-      <td>
+    <article class="application-card">
+      <div class="application-top">
+        <a class="application-title" href="/requests/{{ a.helpRequestId }}/">Thirrja #{{ a.helpRequestId }}</a>
+        <span class="status-pill" data-status="{{ a.status }}">{{ a.status }}</span>
+      </div>
+      <div class="application-meta">
+        <span class="muted">Aplikim #{{ a.applicationId }}</span>
+        <a class="muted" href="/requests/{{ a.helpRequestId }}/">Shiko detajet</a>
+      </div>
+      <div class="application-actions">
         {% if a.status == "PENDING" %}
-          <form method="post" action="/applications/{{ a.applicationId }}/withdraw/" style="display:inline;">
+          <form method="post" action="/applications/{{ a.applicationId }}/withdraw/">
             {% csrf_token %}
             <button type="submit">Tërhiq aplikimin</button>
           </form>
         {% else %}
           <span class="muted">S'ka veprim</span>
         {% endif %}
-      </td>
-    </tr>
+      </div>
+    </article>
+    {% empty %}
+    <div class="empty-state">
+      <h3>Nuk ka ende aplikime</h3>
+      <p class="muted">Kur aplikon për një thirrje, ajo shfaqet këtu me statusin përkatës.</p>
+      <a class="btn-primary" href="/requests/?tab=open#active-requests">Shfleto thirrjet</a>
+    </div>
     {% endfor %}
-  </table>
+  </div>
 </div>
 {% endblock %}
